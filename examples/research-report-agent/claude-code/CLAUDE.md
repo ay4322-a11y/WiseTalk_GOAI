@@ -4,7 +4,7 @@ This project produces market/industry research reports via the `research-report-
 
 ## Rules (spec Element 2)
 
-- All agents follow the behavioral baseline in @docs/behavioral-guidelines.md (Think Before Coding · Simplicity First · Surgical Changes · Goal-Driven Execution + its communication style). No deviations for this project.
+- All agents follow the universal baseline in @docs/behavioral-guidelines.md §1 (Think Before Acting · Goal-Driven Execution · Loop Discipline + its communication style). The coding addendum (§2) doesn't apply — no agent here writes code. No deviations.
 - Public web sources only. Never read anything in `private/` or behind a login.
 - Never present an uncited quantitative claim. Conflicting figures are flagged, never averaged.
 - No investment advice. No PII in any report.

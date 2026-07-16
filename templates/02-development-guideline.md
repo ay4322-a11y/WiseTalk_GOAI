@@ -104,7 +104,7 @@ This phase runs the outer loops of [loop-engineering-reference.md](../reference/
 - **Hill-climb** (if eval cadence ≠ never): re-run the eval set at the cadence from Intake G, add a score column, compare to the previous run. Any case that regresses (pass → fail) → Phase 2 for the owning element, even if totals still pass.
 - **Guardrail review**: check run logs for stop-condition hits and near-runaway loops (budget almost exhausted). A frequently-hit stop condition is a spec gap — either the budget is too tight or the loop is wandering.
 - Watch the run logs (Element 12) for recurring failures — each one is a spec gap, not just a bug.
-- Let memory accumulate (Element 14), and prune it: stale memories mislead future runs.
+- Let memory accumulate (Element 14), and prune it per Element 14's prune rule: stale memories mislead future runs.
 - When responsibilities grow, return to the intake form first — new duties enter through section C, then flow to Router/Skills/Tools. Don't patch tools directly; the spec stops being the truth the moment you do.
 - Re-run Phase 4 after any element change.
 

@@ -9,6 +9,8 @@
 
 Per element: **2 = pass** (spec followed, observed working in a real run) · **1 = partial** (specified but not verified, or minor gaps) · **0 = fail** (unspecified or broken) · **N/A** (not required at this tier, with reason recorded in the spec).
 
+**Static pre-scoring:** the template pack's `/validate-agent` skill auto-checks the statically verifiable parts (leftover `{{…}}` placeholders, criteria verbatim in Element 13, tool allow-list match, concrete stop-condition numbers) and pre-fills this checklist. A static pass supports at most a **1** — a **2 always requires an observed real run**.
+
 **Pass thresholds** (scored elements only, N/A excluded):
 - **Lite:** ≥ 12 of 14 possible, no 0s on required elements
 - **Standard:** ≥ 22 of 26 possible, no 0s on required elements

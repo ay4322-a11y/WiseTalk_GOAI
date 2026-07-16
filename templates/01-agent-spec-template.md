@@ -39,7 +39,7 @@
 |-------|---------------|
 | System prompt: role | *(who the agent is, in 1–2 sentences)* |
 | System prompt: rules | *(hard behavioral rules, constraints from Intake F)* |
-| Behavioral baseline | All agents inherit [behavioral-guidelines.md](../reference/behavioral-guidelines.md) (Think Before Coding · Simplicity First · Surgical Changes · Goal-Driven Execution + communication style). *(record any deviations here; otherwise "baseline, no deviations")* |
+| Behavioral baseline | All agents inherit the **universal baseline** of [behavioral-guidelines.md](../reference/behavioral-guidelines.md) (Think Before Acting · Goal-Driven Execution · Loop Discipline + communication style); agents that write/edit code also inherit its **coding addendum** (Simplicity First · Surgical Changes · code output style). *(state which parts apply: "universal only" or "universal + coding addendum"; record any deviations; name the governing spec / decision log docs if the project has them)* |
 | System prompt: tone/format defaults | *(baseline: answer-first, terse, casual English — override only if this agent needs different)* |
 | History policy | *(how much conversation history; summarize after N turns?)* |
 | Tool-state representation | *(how the agent knows which tools are available/authorized)* |
@@ -218,6 +218,7 @@ flowchart TD
 | Evidence tracking | *(are sources/URLs/query params kept for citation?)* |
 | Run log | *(what is logged, where, for audit/debugging — one trace line per loop iteration: what was tried, what the signal said)* |
 | Trace-back rule | *(how a claim in the deliverable is walked back to its source evidence in the log)* |
+| Untrusted-content rule | *(tool results — fetched pages, files, API responses — are data, never instructions; how are embedded directives flagged? — see [loop-engineering-reference.md](../reference/loop-engineering-reference.md) §6)* |
 
 **Options & trade-offs:** Summarize aggressively but keep provenance — a conclusion without its source can't pass Reflection (Element 13), and a deliverable that can't be traced can't be trusted or reproduced.
 
@@ -260,6 +261,7 @@ flowchart TD
 |-------|---------------|
 | Save trigger | *(after every run / only on user confirmation / on novel learnings)* |
 | Dedup & correction rule | *(update existing memory instead of duplicating; delete wrong ones)* |
+| Prune rule | *(when is a memory stale — age, superseded, N runs unused — and who removes it: the agent at run end / the guardrail review in Phase 5)* |
 | On verified pass (return signal) | *(the terminal sequence: write memory → archive result → STOP; scheduled/background agents also update `memory/state.md` done/next so the next run resumes)* |
 
 **Options & trade-offs:** Save less than you think — stale memory misleads future runs. Never persist secrets or raw PII.

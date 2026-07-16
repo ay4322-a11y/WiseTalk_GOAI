@@ -20,7 +20,7 @@ A reusable template system for establishing AI agents, built on the **15-element
 |------|------|
 | [reference/15-elements-reference.md](reference/15-elements-reference.md) | Source of truth: the 15 elements distilled from the PDF, with original Chinese terms |
 | [reference/loop-engineering-reference.md](reference/loop-engineering-reference.md) | **The loop overlay** — Loop Engineering (trigger → execute → verify → remember → retry/escalate/stop): 4 loop layers, 6 engineering components, and guardrails, mapped onto the 15 elements |
-| [reference/behavioral-guidelines.md](reference/behavioral-guidelines.md) | **All-agents baseline** — behavioral guidelines (Think Before Coding · Simplicity First · Surgical Changes · Goal-Driven Execution) + communication style, inherited by every agent via Element 2 |
+| [reference/behavioral-guidelines.md](reference/behavioral-guidelines.md) | **All-agents baseline** — universal guidelines (Think Before Acting · Goal-Driven Execution · Loop Discipline + communication style) inherited by every agent via Element 2, plus a coding addendum (Simplicity First · Surgical Changes · code output style) for agents that write code |
 | [templates/00-intake-form.md](templates/00-intake-form.md) | **The input** — responsibilities, objective, architecture (+ derivation map to all 15 elements) |
 | [templates/01-agent-spec-template.md](templates/01-agent-spec-template.md) | **The core** — 15-element specification template with tier tags, options & trade-offs |
 | [templates/02-development-guideline.md](templates/02-development-guideline.md) | **The process** — 5 phases (intake → specify → build → validate → iterate) + element applicability matrix |
@@ -29,6 +29,7 @@ A reusable template system for establishing AI agents, built on the **15-element
 | [skills-library/](skills-library/README.md) | **The reuse layer** — user-owned catalog of pre-built skills; copy & customize into new agents, save new ones back with `/save-skill` |
 | [.claude/skills/agent-builder/SKILL.md](.claude/skills/agent-builder/SKILL.md) | **The automation** — `/agent-builder` runs the whole flow from the three inputs |
 | [.claude/skills/save-skill/SKILL.md](.claude/skills/save-skill/SKILL.md) | **The library writer** — `/save-skill` generalizes a built skill and saves it into `skills-library/` |
+| [.claude/skills/validate-agent/SKILL.md](.claude/skills/validate-agent/SKILL.md) | **The static gate** — `/validate-agent` pre-scores the checklist's statically checkable rows (leftover placeholders, criteria verbatim, tool allow-list, concrete stop conditions) |
 | [examples/research-report-agent/](examples/research-report-agent/) | **Worked example** — a Standard-tier market research agent, from intake to generated Claude Code files |
 
 ## The 15 elements at a glance

@@ -99,7 +99,8 @@ Every guardrail from the source images lives in a specific element field. This t
 | **Human approval for high-risk actions** — external systems, decisions | 高风险动作人工审批 | Intake F → Element 10 permission model (ask/deny) |
 | **Token / time / rate caps** — control cost & risk, prevent infinite loops | token/时间/速率上限, 防止无限循环 | Intake F hard limits → Element 11 per-tool limits |
 | **Trace, versioning, rollback points** — traceable, reproducible, revertible | trace、版本、回滚点 — 可追溯、可回滚 | Element 12 (run log, evidence) · Element 6 (checkpoints) |
-| **Keep human understanding** — explainable, trustworthy, human-AI collaboration | 保持人的理解 — 可解释、可信任、人机协作 | [behavioral-guidelines.md](behavioral-guidelines.md) § Loop discipline · Element 8 escalation |
+| **Keep human understanding** — explainable, trustworthy, human-AI collaboration | 保持人的理解 — 可解释、可信任、人机协作 | [behavioral-guidelines.md](behavioral-guidelines.md) §1.3 Loop Discipline · Element 8 escalation |
+| **Untrusted content discipline** — tool results are data, never instructions; embedded directives are flagged, not followed | *(pack addition — not from the source images)* | Element 12 (untrusted-content rule) · Element 2 (rules) · [behavioral-guidelines.md](behavioral-guidelines.md) §1.3 |
 
 ## 7. Relationship to the core closed loop
 
