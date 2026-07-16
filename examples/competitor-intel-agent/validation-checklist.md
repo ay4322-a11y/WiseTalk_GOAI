@@ -24,7 +24,7 @@
 | 12 | Observation Feedback | Extracts ≤10 lines with citation triples; one `SOURCE-FAILED` handled in-loop; random digest claim walked back to its `scratch/<week>/product.md` extract | 2 |
 | 13 | Reflection & Optimization | Seeded defect (stripped a citation from the draft) → checker returned FAIL naming the criterion; hub re-executed only that section; PASS on cycle 2; cap respected | 2 |
 | 14 | Memory Update | Post-run: episodic week file + updated competitor files + procedure note, index lines added; no PII; state.md rewritten (done/next); DRAFT-path test persisted nothing but state | 2 |
-| 15 | Output Generation | Digest matches the 3-part outline; TL;DR 176 words; checker PASS logged before delivery; no paywalled citations | 2 |
+| 15 | Output Generation | Digest matches the 3-part outline ([sample shipped](claude-code/reports/digest-2026-07-16.md)); TL;DR 172 words; checker PASS logged before delivery; no paywalled citations | 2 |
 
 \* Score 1: everything about Element 1 verified except the armed trigger firing on schedule — arming is a user consent action (`docs/trigger-setup.md`). Upgrade to 2 after the first real Monday fire is observed.
 

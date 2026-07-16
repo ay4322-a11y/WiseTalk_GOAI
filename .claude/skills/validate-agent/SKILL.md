@@ -10,11 +10,17 @@ Output: a check report (one row per check: PASS/FAIL with `file:line` evidence),
 
 ## Procedure
 
-1. **Placeholder scan** — search every generated file (agent `.md`s, skills, `CLAUDE.md`, `docs/`, `memory/`, `evals/`) for `{{`. Any hit = FAIL with the path — a leftover placeholder means an uncustomized library copy or skeleton (checklist Element 9's explicit check).
-2. **Criteria verbatim** — extract the success criteria and acceptance signal from intake section B; confirm each appears **verbatim** in spec Element 13 *and* in the agent body's self-check section (spec sign-off rule).
-3. **Tool allow-list match** — compare each agent's `tools:` frontmatter against the spec's Element 11 inventory (plus MCP tool names from Element 10). Extra tools or missing tools = FAIL (checklist Element 11: "exactly the specified tools, no more").
-4. **Concrete stop conditions** — the agent body's `## Stop conditions` block and the spec's Element 7 step budget/no-progress rule, Element 13 cycle cap, and Element 11 caps all contain actual numbers — never "reasonable", "a few", or an unfilled field (spec sign-off rule).
-5. **Coverage cross-checks** — every intake C responsibility is covered by a route/skill/tool; every spec element is filled or marked "N/A because…" (spec sign-off table).
+Run the commands as written (from the package root; `<cc>` = the generated `claude-code/` tree) — the checks are deterministic, not re-derived per run.
+
+1. **Placeholder scan** — a leftover placeholder means an uncustomized library copy or skeleton (checklist Element 9's explicit check). The literal `{{…}}` (ellipsis) is allowed — it's how docs *mention* placeholders.
+   `grep -rn '{{' <cc> | grep -v '{{…}}'` → any output = FAIL with the path.
+2. **Criteria verbatim** — extract each success criterion and the acceptance signal from intake section B, then for each:
+   `grep -Fc "<criterion text>" agent-spec.md <cc>/.claude/agents/<agent-name>.md` → count must be ≥1 in the spec (Element 13) **and** ≥1 in the agent body's self-check; 0 anywhere = FAIL (spec sign-off rule). If a checker agent exists, also require ≥1 in its grading procedure.
+3. **Tool allow-list match** — list what each agent actually holds:
+   `grep -H '^tools:' <cc>/.claude/agents/*.md` → compare each line against the spec's Element 11 inventory (plus MCP tool names from Element 10). Extra tools or missing tools = FAIL (checklist Element 11: "exactly the specified tools, no more").
+4. **Concrete stop conditions** — surface every stop-condition line:
+   `grep -n -A5 '^## Stop conditions' <cc>/.claude/agents/*.md` and `grep -nE 'budget|no.progress|cycle|cap' agent-spec.md` → every budget/cap must contain an actual number; the words "reasonable", "a few", "several", or an unfilled field = FAIL (spec sign-off rule). Quick screen: `grep -rniE 'max (a few|several|reasonable)' <cc> agent-spec.md` must return nothing.
+5. **Coverage cross-checks** — every intake C responsibility ID (R1…Rn) is covered by a route/skill/tool: check the spec's sign-off table and Element 4 routing rows against intake C; every spec element is filled or marked "N/A because…" (`grep -c 'N/A because' agent-spec.md` should equal the number of skipped elements for the tier).
 6. **Pre-fill & report** — write the results into the package's `validation-checklist.md`: a static PASS supports at most a **1** (specified, not yet verified) — a **2 always requires an observed real run**. Report: the check table with evidence, the pre-filled rows, and the remaining manual work (run the 3 scenarios, verify the trigger fires if armed, record the eval baseline).
 
 ## Failure handling
