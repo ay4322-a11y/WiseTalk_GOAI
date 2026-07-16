@@ -30,7 +30,8 @@ A reusable template system for establishing AI agents, built on the **15-element
 | [.claude/skills/agent-builder/SKILL.md](.claude/skills/agent-builder/SKILL.md) | **The automation** — `/agent-builder` runs the whole flow from the three inputs |
 | [.claude/skills/save-skill/SKILL.md](.claude/skills/save-skill/SKILL.md) | **The library writer** — `/save-skill` generalizes a built skill and saves it into `skills-library/` |
 | [.claude/skills/validate-agent/SKILL.md](.claude/skills/validate-agent/SKILL.md) | **The static gate** — `/validate-agent` pre-scores the checklist's statically checkable rows (leftover placeholders, criteria verbatim, tool allow-list, concrete stop conditions) |
-| [examples/research-report-agent/](examples/research-report-agent/) | **Worked example** — a Standard-tier market research agent, from intake to generated Claude Code files |
+| [examples/research-report-agent/](examples/research-report-agent/) | **Worked example (Standard tier)** — a market research agent, from intake to generated Claude Code files |
+| [examples/competitor-intel-agent/](examples/competitor-intel-agent/) | **Worked example (Full tier)** — a scheduled orchestrator + 2 parallel workers + read-only checker with resumable state; all four loop layers active |
 
 ## The 15 elements at a glance
 

@@ -38,5 +38,5 @@ Work inside an output folder named `agents/<agent-name>/` (create it; kebab-case
 - Ground every generated section in the user's three inputs — no invented responsibilities, tools, or success criteria. Anything assumed is labeled *(inferred — confirm)*.
 - Never grant a generated agent tools beyond what its Element 11 table lists.
 - Every generated agent has at least one **verifiable stop condition per active loop layer** (a concrete number the agent can check itself); never arm a scheduled/event trigger — generate the setup instructions and let the user run them.
-- Consult `examples/research-report-agent/` as the canonical style reference for depth and tone of a completed package.
+- Consult `examples/research-report-agent/` (Standard tier) and `examples/competitor-intel-agent/` (Full tier: orchestrator + workers + checker + resumable state) as the canonical style references for depth and tone of a completed package.
 - Do not modify files under `templates/` or `reference/` — they are the pack, not the output. `skills-library/` is different: it is user content you may read from freely and, with the user's confirmation, save skills back into.
