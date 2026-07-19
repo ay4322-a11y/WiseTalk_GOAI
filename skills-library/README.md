@@ -11,6 +11,7 @@ This table is the matching surface: `/agent-builder` matches each Element 9 skil
 | [swot-analysis](swot-analysis/SKILL.md) | Evidence-grounded SWOT (4-quadrant) analysis of a company, product, or initiative | analysis, strategy, business | (template pack seed) | 2026-07-16 |
 | [market-expansion-analysis](market-expansion-analysis/SKILL.md) | Assess a target market for expansion: sizing, competitors, entry barriers, go/no-go | analysis, market, strategy | (template pack seed) | 2026-07-16 |
 | [run-evals](run-evals/SKILL.md) | Run and score an agent's eval set, append a run column, report regressions (the hill-climbing loop) | evaluation, quality, loop | (template pack seed) | 2026-07-16 |
+| [analysis-orchestrator](analysis-orchestrator/SKILL.md) | Orchestrate several deterministic analysis skills over one input, reconcile their figures, and synthesize one consolidated report — never computing figures itself | analysis, orchestration, reporting | sales-data-analyst | 2026-07-20 |
 
 ## Workflows
 
