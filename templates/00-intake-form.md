@@ -3,6 +3,15 @@
 > **This form is the single input to the whole template system.** Fill it in first.
 > The three core inputs — **Responsibilities**, **Objective**, and **Architecture Design Structure** — drive every one of the 15 elements in the [agent spec template](01-agent-spec-template.md). See the derivation map at the bottom.
 
+> **When the answers aren't ready — deep intake.** If the objective or the architecture is still vague, or there are more than ~3 responsibilities with unclear boundaries, don't fill this in from guesses. Interview the user through it instead:
+> - **One question at a time**, waiting for the answer before the next. A batch of questions is bewildering and gets shallow answers.
+> - **Follow the dependency order** — B (objective) → C (responsibilities) → D (architecture), because the tier in D only makes sense once B and C are settled. Walk each branch of the decision tree to the bottom before moving to the next.
+> - **Recommend an answer to every question.** A question with a proposed answer gets a decision; a bare question gets deferred.
+> - **Look up facts; ask about decisions.** Anything discoverable from the filesystem, the repo, or a tool — existing conventions, available data sources, what a system already does — is legwork, not a question. The decisions are the user's.
+> - Stop when every section below is filled with an answer the user confirmed, and nothing is left marked *(inferred)*.
+>
+> **Once it's filled — grill it.** Deep intake *collects* answers; it doesn't *attack* them. Stress-test what the completed form now claims, hardest at the acceptance signal (B) and the tier (D). A weakness that survives this form is inherited by every element downstream.
+
 ---
 
 ## A. Identity
@@ -39,7 +48,7 @@
 ## C. Responsibilities (职责) — *the WHAT*
 
 > List every duty the agent owns. Each responsibility becomes routable task types (Element 4), required skills (Element 9), and required tools (Elements 10–11).
-> **Trigger values:** `on-demand` (user asks) · `scheduled(<cron>)` (e.g. `scheduled(Mon 09:00)`) · `event(<source>)` (e.g. `event(new file in inbox/)`). Any scheduled/event trigger activates the event-driven loop — see Element 1 and [loop-engineering-reference.md](../reference/loop-engineering-reference.md) §3.
+> **Trigger values:** `on-demand` (user asks) · `scheduled(<cron>)` (e.g. `scheduled(Mon 09:00)`) · `event(<source>)` (e.g. `event(new file in inbox/)`). Any scheduled/event trigger activates the event-driven loop — see Element 1.
 
 | # | Responsibility | Trigger (on-demand / scheduled / event) | Expected output |
 |---|----------------|------------------------------------------|-----------------|
@@ -56,7 +65,7 @@
 - [ ] **Agent + skills** — one agent invoking packaged skills/tools (→ Standard tier)
 - [ ] **Orchestrator + sub-agents** — a hub routes to specialized workers (→ Full tier)
 
-**Complexity tier** *(determines which of the 15 elements are mandatory — see the [applicability matrix](02-development-guideline.md#element-applicability-matrix))*:
+**Complexity tier** *(determines which of the 15 elements are mandatory)*:
 - [ ] **Lite** — single-purpose, few tools, linear flow
 - [ ] **Standard** — tool-using agent with memory and reflection
 - [ ] **Full** — multi-agent orchestration with DAG workflows
@@ -119,4 +128,4 @@ flowchart TD
 | F. Environment & constraints (incl. escalation path, background runs) | 2 Context Builder · 10 MCP permissions · 11 Tools scope/caps · 6 Workflow (escalation) · 8 Brain Hub (escalation path) |
 | G. Memory & learning (incl. eval cadence) | 3 Memory Retrieval · 14 Memory Update · 13 Reflection (hill-climbing eval set) |
 
-**Next step:** take this completed form into [01-agent-spec-template.md](01-agent-spec-template.md) and specify each element, following [02-development-guideline.md](02-development-guideline.md).
+**Next step:** take this completed form into [01-agent-spec-template.md](01-agent-spec-template.md) and specify each element.

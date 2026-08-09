@@ -17,7 +17,7 @@
 | 6 | Workflow Orchestration | Parallel `Agent` (Task) calls + background tasks | Parallel sub-agent launches for independent steps; sequential calls for dependencies. Checkpoint = write intermediate artifacts to files. |
 | 7 | Reasoning & Decision | Agent body + `model` choice | ReAct is native (tool loop). State step budgets and escalation rules in the body; pick `model` per depth of reasoning needed. |
 | 8 | Agent Brain Hub | Main session or an orchestrator agent | Lite/Standard: main Claude session is the hub. Full: a dedicated orchestrator agent that launches workers via the Agent tool. |
-| 9 | Skills Layer | `.claude/skills/<name>/SKILL.md` | Each recurring multi-tool procedure becomes a skill, invocable as `/name`. Check the [skills library](../skills-library/README.md) for a pre-built match to copy & customize before writing new. |
+| 9 | Skills Layer | `.claude/skills/<name>/SKILL.md` | Each recurring multi-tool procedure becomes a skill, invocable as `/name`. Check the [skills library](../skills-library/README.md) for a pre-built match to copy & customize before writing new; whether copied or new, the same authoring quality bar applies. |
 | 10 | MCP Protocol | `.mcp.json` + `settings.json` permissions | Declare MCP servers in `.mcp.json`; encode the permission model (allow/ask/deny) in `.claude/settings.json` permission rules. |
 | 11 | Tools Layer | `tools:` frontmatter allow-list | Grant each agent only the tools its spec lists (built-ins + `mcp__server__tool` names). |
 | 12 | Observation Feedback | Harness (native) + agent body | Tool results return to the loop natively. Add body instructions for summarizing large results and keeping source URLs for citations. |
@@ -29,7 +29,7 @@
 
 ## Loop Engineering → Claude Code construct map
 
-The loop fields inside the elements ([loop-engineering-reference.md](../reference/loop-engineering-reference.md)) map to concrete Claude Code mechanisms:
+The loop fields inside the elements map to concrete Claude Code mechanisms:
 
 | Loop construct | Spec home | Claude Code mechanism | How |
 |----------------|-----------|-----------------------|-----|
@@ -43,9 +43,9 @@ The loop fields inside the elements ([loop-engineering-reference.md](../referenc
 | Maker/checker separation | El. 8 / 13 | Second reviewer agent `.md`, read-only tools | See checker skeleton below; the checker cannot edit, only grade. |
 | Stop conditions & caps | El. 7 / 11 | `## Stop conditions` block in the agent body + `settings.json` deny rules | Concrete numbers in the body; hard denies for out-of-bounds operations. |
 | Approval gates | El. 10 | `settings.json` `ask` rules | High-risk actions prompt the human — the guardrail is enforced by the harness, not by prose. |
-| Eval set (hill-climbing) | El. 13 eval set | `evals/eval-cases.md` (+ the [run-evals](../skills-library/README.md) library skill) | Scores tracked per run in a markdown table — see skeleton below. |
+| Eval set (hill-climbing) | El. 13 eval set | `evals/eval-cases.md` | Scores tracked per run in a markdown table — see skeleton below. |
 
-> **Trigger arming is manual by design:** the mapping (and `/agent-builder`) generates the exact `/schedule` / `/loop` / hook configuration as instructions, but never creates cron jobs or hooks without the user running them — arming a background loop is a consent decision.
+> **Trigger arming is manual by design:** the mapping generates the exact `/schedule` / `/loop` / hook configuration as instructions, but never creates cron jobs or hooks without the user running them — arming a background loop is a consent decision.
 
 ---
 
@@ -172,12 +172,17 @@ delivery target {{channel}} is permitted.
 
 ## Skill skeleton (`.claude/skills/<skill-name>/SKILL.md`) — Element 9
 
-> **Reuse first:** if the [skills library](../skills-library/README.md) index has a matching skill, copy its folder and customize its `## Customization points` (then verify no `{{…}}` remains). Use this skeleton only when nothing matches. Either way, a skill worth reusing later can be saved back with `/save-skill`.
+> **Reuse first:** if the [skills library](../skills-library/README.md) index has a matching skill, copy its folder and customize its `## Customization points` (then verify no `{{…}}` remains). Use this skeleton only when nothing matches. Either way, a skill worth reusing later can be saved back into the library.
+>
+> **Quality bar:** a clear authoring bar governs what goes in the blanks — invocation mode, description wording, completion criteria, and what to push into a sibling file. The three decisions it drives are marked in the skeleton below.
 
 ```markdown
 ---
 name: {{skill-name}}
-description: {{when to use — written as a trigger rule, incl. "do NOT use for …"}}
+# Invocation (deliberate choice): omit `disable-model-invocation` when the agent must
+# reach this skill on its own mid-run — the usual case for an Element 9 skill. Add
+# `disable-model-invocation: true` for a human-triggered procedure, and pay no context load.
+description: {{when to use — written as a trigger rule, one trigger per branch (no synonym restatements), incl. "do NOT use for …"}}
 ---
 
 # {{Skill title}}
@@ -186,12 +191,14 @@ Input: {{what the caller provides}}
 Output: {{what this skill returns/produces}}
 
 ## Procedure
-1. {{step wrapping tools — Element 9's "wraps" column}}
+1. {{step wrapping tools — Element 9's "wraps" column}} → {{completion criterion: checkable (done vs not-done is observable) and, where it matters, exhaustive}}
 2. …
 
 ## Failure handling
 {{the skill's specified failure mode}}
 ```
+
+> **Progressive disclosure:** when reference material only some runs need starts crowding the procedure, move it to a sibling file in the skill folder (`{{topic}}.md`) and point at it from the step that needs it — the pointer's wording decides how reliably it gets read.
 
 ---
 
@@ -289,7 +296,7 @@ Hitting a stop condition is correct — return what exists with `status: gap({{r
 
 ## Eval-cases skeleton (`evals/eval-cases.md`) — Element 13 hill-climbing
 
-> Seeded from the success criteria + the validation checklist's 3 scenarios (target 5–8 cases). Each run appends a score column: **1** = acceptance criterion met, **0** = not met. Re-scored at the eval cadence from Intake G — by hand or with the [run-evals](../skills-library/README.md) library skill.
+> Seeded from the success criteria + the validation checklist's 3 scenarios (target 5–8 cases). Each run appends a score column: **1** = acceptance criterion met, **0** = not met. Re-scored at the eval cadence from Intake G — by hand.
 
 ```markdown
 # Eval cases — {{agent-name}}
@@ -303,7 +310,7 @@ Hitting a stop condition is correct — return what exists with `status: gap({{r
 | 5 | {{case derived from success criterion 2}} | {{criterion, verbatim}} | | | |
 
 **Baseline rule:** the first full run's scores are the baseline — never edit them.
-**Regression rule:** any case flipping 1 → 0 after a change → loop back to Phase 2 for the owning element, even if the total still passes.
+**Regression rule:** any case flipping 1 → 0 after a change → loop back to the owning element, even if the total still passes.
 ```
 
 ---

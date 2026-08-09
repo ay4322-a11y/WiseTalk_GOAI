@@ -1,37 +1,39 @@
-# Skills Library
+# Skills Library — WiseTalk Shared Tools
 
-A growing, user-owned catalog of pre-built skills. When building a new agent, **reuse from here first** (copy & customize); write a skill from scratch (the skeleton in [templates/03-claude-code-mapping.md](../templates/03-claude-code-mapping.md#skill-skeleton-claudeskillsskill-nameskillmd--element-9)) only when nothing here matches. Unlike `templates/` and `reference/`, this folder is **meant to be written to** — every agent you build can leave reusable skills behind.
+The 8 skills in this library are the **shared capability layer of the WiseTalk system** — the "X" in the 1+8+X+Security architecture. Each is a complete, deterministic, tested skill (WiseTalk Skills 4–12), stored once here and copied into the agents that use them at build time.
 
 ## Index
 
-This table is the matching surface: `/agent-builder` matches each Element 9 skill against it (name / description / tags) — it never scans skill folders. Keep one line per skill, current.
+| Skill | WiseTalk # | Description | Tags | Origin agent | Saved |
+|-------|-----------|-------------|------|--------------|-------|
+| [mece-logic-checker](mece-logic-checker/SKILL.md) | Skill-4 | Deterministic MECE check on argument points — keyword overlap between points and missing 4M1E dimensions | mece, logic, structure, quality | wisetalk-mece-agent | 2026-08-09 |
+| [subtext-emotion](subtext-emotion/SKILL.md) | Skill-6 | Decode the other party's hidden intentions and concerns from their exact words — JSON sentiment map with a suggestion | subtext, emotion, negotiation, sentiment | wisetalk-scqa-agent, wisetalk-ride-agent | 2026-08-09 |
+| [battle-simulator](battle-simulator/SKILL.md) | Skill-8 | Enter the Simulation Battle Arena — relentless role-play interrogation of the accepted draft by a strict persona, with an emotional safety valve | battle, roleplay, interrogation, persona, practice | all 8 expert agents | 2026-08-09 |
+| [battle-scoring](battle-scoring/SKILL.md) | Skill-9 | Score a completed battle transcript — impartial 0–100 judgment on logic, EQ, responsiveness, persuasion + exactly 2 tips | battle, scoring, judge, feedback, radar | all 8 expert agents | 2026-08-09 |
+| [injection-filter](injection-filter/SKILL.md) | Skill-11 | Prompt-injection & sensitive-keyword interceptor on every incoming user message before routing — deterministic DFA + regex filter, fail-closed, blocks with the spec's verbatim reason | injection, security, filter, block, gateway | wisetalk-router-agent | 2026-08-09 |
+| [hallucination-check](hallucination-check/SKILL.md) | Skill-12 | Post-validator on every accepted draft before delivery — wraps invented numeric claims in the AI-Inferred marker and appends the mandatory disclaimer, fail-soft | hallucination, disclaimer, verify, security, fail-soft | all 8 expert agents | 2026-08-09 |
+| [growth-trends](growth-trends/SKILL.md) | Skill-10 | Aggregate battle-score history into weekly/monthly growth trends — deterministic bucket averages + weak-point detection, graceful empty-history (user-invoked: type `growth-trends`) | trends, growth, dashboard, weak-point, aggregate | wisetalk-router-agent | 2026-08-09 |
+| [funnel-compression](funnel-compression/SKILL.md) | Skill-5 | Compress a long text to less than 20% of its length — extract the absolute core (action items, data, conclusions), preserve deadlines verbatim, report loss_rate | compression, funnel, denoise, summarization | wisetalk-funnel-agent | 2026-08-10 |
 
-| Skill | Description | Tags | Origin agent | Saved |
-|-------|-------------|------|--------------|-------|
-| [swot-analysis](swot-analysis/SKILL.md) | Evidence-grounded SWOT (4-quadrant) analysis of a company, product, or initiative | analysis, strategy, business | (template pack seed) | 2026-07-16 |
-| [market-expansion-analysis](market-expansion-analysis/SKILL.md) | Assess a target market for expansion: sizing, competitors, entry barriers, go/no-go | analysis, market, strategy | (template pack seed) | 2026-07-16 |
-| [run-evals](run-evals/SKILL.md) | Run and score an agent's eval set, append a run column, report regressions (the hill-climbing loop) | evaluation, quality, loop | (template pack seed) | 2026-07-16 |
-| [analysis-orchestrator](analysis-orchestrator/SKILL.md) | Orchestrate several deterministic analysis skills over one input, reconcile their figures, and synthesize one consolidated report — never computing figures itself | analysis, orchestration, reporting | sales-data-analyst | 2026-07-20 |
+## How the skills are used
 
-## Workflows
+Each skill is copied into the agents that need it at build time:
 
-### Reuse (library → new agent)
+| Skill | Copied into |
+|-------|-------------|
+| mece-logic-checker | wisetalk-mece-agent |
+| subtext-emotion | wisetalk-scqa-agent, wisetalk-ride-agent |
+| battle-simulator | all 8 expert agents |
+| battle-scoring | all 8 expert agents |
+| growth-trends | wisetalk-router-agent |
+| injection-filter | wisetalk-router-agent |
+| hallucination-check | all 8 expert agents |
+| funnel-compression | wisetalk-funnel-agent |
 
-1. Match the needed Element 9 skill against the index above.
-2. Copy `skills-library/<name>/` → the target project's `.claude/skills/<name>/`.
-3. Customize everything listed under the skill's `## Customization points`: rewrite the `description` trigger for the new agent, replace every `{{…}}` placeholder (data sources, output destination, domain specifics), adjust procedure steps and failure handling to the agent's spec.
-4. Verify **no `{{…}}` placeholders remain** — the validation checklist checks this.
-
-### Save-back (new agent → library)
-
-Run `/save-skill <path-to-SKILL.md>` — it generalizes agent-specific parts back into `{{…}}` placeholders, writes the skill here, and adds/updates its index line. (Manual equivalent: generalize, copy the folder in, add the index line yourself.)
-
-Save a skill when it wraps a procedure another agent could plausibly need (domain analyses, recurring report formats, data pipelines). Don't save skills that only make sense inside one agent.
-
-### Improve-back (customized copy → library)
-
-If you significantly improve a copied skill inside an agent (better procedure, better failure handling), port the improvement back to the library version so the library doesn't go stale. Git history covers versioning — no version numbers in files.
+**Security architecture note:** the two security skills sit at opposite ends of every request. `injection-filter` (Skill-11) is the **pre-interceptor** — it checks every incoming user message before routing. `hallucination-check` (Skill-12) is the **post-validator** — it runs on every accepted draft right before delivery. Together they form the Two-Front Security Gateway.
 
 ## Library skill format
 
-Same skeleton as any skill (frontmatter `name` + `description` written as a trigger rule, optional `tags`, Input/Output, `## Procedure`, `## Failure handling`), **plus** a `## Customization points` section listing exactly what to adapt per agent. Skills are complete and usable as-is except at their `{{…}}` marks.
+Each skill folder follows the same skeleton (frontmatter `name` + `description` written as a trigger rule, Input/Output, `## Procedure`, `## Failure handling`). A skill folder may carry **sibling files** — reference or scripts the procedure points at (`injection-filter/scripts/dfa-filter.py`, `hallucination-check/scripts/hallucination-detect.py`, `growth-trends/scripts/aggregate-scores.py`, `mece-logic-checker/scripts/mece-check.py`). Copy the whole folder, siblings included.
+
+The WiseTalk build process keeps the library version and the per-agent copies in sync: the agent's copy is the same skill with the model's fields baked in; this library is the canonical source of the shared logic.

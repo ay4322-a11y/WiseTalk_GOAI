@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Write(memory/**)"
+    ],
+    "ask": [
+      "Write",
+      "Edit"
+    ],
+    "deny": [
+      "Read(private/**)",
+      "Bash(rm:*)",
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(git checkout .*)",
+      "Bash(git restore .*)",
+      "Bash(git branch -D:*)"
+    ]
+  }
+}

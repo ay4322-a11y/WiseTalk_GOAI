@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+
+# Generated/build artifacts
+_build/
+
+# Binary source documents (specs kept as markdown)
+*.pdf
+*.docx
+*.png

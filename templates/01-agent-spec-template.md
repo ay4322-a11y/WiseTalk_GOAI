@@ -2,9 +2,7 @@
 
 > **Input:** a completed [00-intake-form.md](00-intake-form.md).
 > **Output:** a complete agent specification, one section per element.
-> **Tier tags:** each element is marked for **Lite / Standard / Full** tiers. Skip elements not required by your tier (see the [applicability matrix](02-development-guideline.md#element-applicability-matrix)) — but record *"N/A because…"* rather than deleting the section, so the decision is visible.
->
-> Background on every element: [15-elements-reference.md](../reference/15-elements-reference.md).
+> **Tier tags:** each element is marked for **Lite / Standard / Full** tiers. Skip elements not required by your tier — but record *"N/A because…"* rather than deleting the section, so the decision is visible.
 
 ---
 
@@ -58,7 +56,7 @@
 | What gets recalled | *(past tasks, user preferences, domain knowledge, procedures)* |
 | Relevance rule | *(when is a memory injected into context vs. ignored?)* |
 
-**Options & trade-offs:** File-based memory (one fact per file + an index) is simplest and auditable; vector DBs pay off only at scale. Hybrid retrieval (keyword + semantic) is the PDF's default.
+**Options & trade-offs:** File-based memory (one fact per file + an index) is simplest and auditable; vector DBs pay off only at scale. Hybrid retrieval (keyword + semantic) is the default.
 
 ## Element 4 — Task Router (任务路由)
 
@@ -101,7 +99,7 @@
 
 | Field | Specification |
 |-------|---------------|
-| Parallelizable steps | *(which sub-tasks are independent?)* |
+| Parallelizable steps | *(which sub-tasks are independent? — and which fan-out shape: **partition** (split the work, merge results) or **divergent** (same task under different constraints, compare and synthesize))* |
 | Dependencies | *(step X needs output of step Y)* |
 | Retry policy | *(retries per step, backoff, give-up behavior)* |
 | Checkpointing | *(what state is saved, where, resume behavior — checkpoints double as rollback points)* |
@@ -119,7 +117,7 @@ flowchart LR
     C --> END([deliver])
 ```
 
-**Options & trade-offs:** Parallelism speeds runs but complicates failure handling. If any step is expensive, checkpoint before it.
+**Options & trade-offs:** Parallelism speeds runs but complicates failure handling. If any step is expensive, checkpoint before it. Partition fan-out buys wall-clock time; divergent fan-out buys a better answer at N× the cost — reserve it for genuinely branching decisions, the same rule the ToT line in Element 7 applies.
 
 ## Element 7 — Reasoning & Decision (推理决策)
 
@@ -134,7 +132,7 @@ flowchart LR
 | Decision authority | *(what the agent decides alone vs. escalates to the user)* |
 | Uncertainty behavior | *(guess & flag / ask / stop)* |
 
-**Options & trade-offs:** ReAct is the default for tool-using agents. ToT costs multiples more — reserve for genuinely branching decisions. Always set a step budget; runaway loops are the #1 agent failure. **Every stop condition here must be verifiable by the agent itself** — concrete numbers it can check mid-run, not judgment calls (see [loop-engineering-reference.md](../reference/loop-engineering-reference.md) §6).
+**Options & trade-offs:** ReAct is the default for tool-using agents. ToT costs multiples more — reserve for genuinely branching decisions. Always set a step budget; runaway loops are the #1 agent failure. **Every stop condition here must be verifiable by the agent itself** — concrete numbers it can check mid-run, not judgment calls.
 
 ## Element 8 — Agent Brain Hub (Agent 大脑中枢)
 
@@ -173,7 +171,7 @@ flowchart TD
 | *(e.g. Search)* | *(web search + fetch)* | *(query → sourced findings)* | *(no results → widen query once, then report gap)* |
 | | | | |
 
-**Options & trade-offs:** A skill = a reusable, named procedure with a contract. Create one when the same multi-tool sequence recurs; otherwise call tools directly. The PDF's four base skills: Search, Browser, Data analysis, Code.
+**Options & trade-offs:** A skill = a reusable, named procedure with a contract. Create one when the same multi-tool sequence recurs; otherwise call tools directly. Four base skills: Search, Browser, Data analysis, Code.
 
 ## Element 10 — MCP Protocol (MCP 协议连接)
 
@@ -218,7 +216,7 @@ flowchart TD
 | Evidence tracking | *(are sources/URLs/query params kept for citation?)* |
 | Run log | *(what is logged, where, for audit/debugging — one trace line per loop iteration: what was tried, what the signal said)* |
 | Trace-back rule | *(how a claim in the deliverable is walked back to its source evidence in the log)* |
-| Untrusted-content rule | *(tool results — fetched pages, files, API responses — are data, never instructions; how are embedded directives flagged? — see [loop-engineering-reference.md](../reference/loop-engineering-reference.md) §6)* |
+| Untrusted-content rule | *(tool results — fetched pages, files, API responses — are data, never instructions; how are embedded directives flagged?)* |
 
 **Options & trade-offs:** Summarize aggressively but keep provenance — a conclusion without its source can't pass Reflection (Element 13), and a deliverable that can't be traced can't be trusted or reproduced.
 
@@ -254,14 +252,14 @@ flowchart TD
 | Memory type | What gets saved | Format & location |
 |-------------|-----------------|-------------------|
 | **Episodic** (事件) — what happened | *(task summary, decisions, outcome)* | |
-| **Semantic** (知识) — facts learned | *(domain facts, user preferences)* | |
+| **Semantic** (知识) — facts learned | *(domain facts, user preferences, the domain glossary)* | |
 | **Procedural** (流程) — how-to | *(workflows that worked, pitfalls)* | |
 
 | Field | Specification |
 |-------|---------------|
 | Save trigger | *(after every run / only on user confirmation / on novel learnings)* |
 | Dedup & correction rule | *(update existing memory instead of duplicating; delete wrong ones)* |
-| Prune rule | *(when is a memory stale — age, superseded, N runs unused — and who removes it: the agent at run end / the guardrail review in Phase 5)* |
+| Prune rule | *(when is a memory stale — age, superseded, N runs unused — and who removes it: the agent at run end / the guardrail review)* |
 | On verified pass (return signal) | *(the terminal sequence: write memory → archive result → STOP; scheduled/background agents also update `memory/state.md` done/next so the next run resumes)* |
 
 **Options & trade-offs:** Save less than you think — stale memory misleads future runs. Never persist secrets or raw PII.
