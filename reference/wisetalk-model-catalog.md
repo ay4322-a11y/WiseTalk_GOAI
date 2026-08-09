@@ -1,6 +1,6 @@
 # WiseTalk Expert Agents — Model Catalog
 
-The **shared reference** for what differs between the 8 WiseTalk Expert Communication Agents (`examples/wisetalk-<model>-agent/`). Each agent bakes its model in at build time: the agent body's `## Model reference — <MODEL>` section is the runtime source of truth (no catalog file is read at runtime), and `claude-code/config/model-reference.md` in each agent directory is a human-readable copy of that model's section below. This file is the master for authoring and sync — update it to change any model's behavior, then update the affected agent's body and `model-reference.md` to match. Do not edit the skills themselves.
+The **shared reference** for what differs between the 8 WiseTalk Expert Communication Agents (`agents/wisetalk-<model>-agent/`). Each agent bakes its model in at build time: the agent body's `## Model reference — <MODEL>` section is the runtime source of truth (no catalog file is read at runtime), and `claude-code/config/model-reference.md` in each agent directory is a human-readable copy of that model's section below. This file is the master for authoring and sync — update it to change any model's behavior, then update the affected agent's body and `model-reference.md` to match. Do not edit the skills themselves.
 
 > Source: *8 Commmunication Model.md* (model structures, contexts, guidelines, examples, references) + *WiseTalk: Agents & Skills Technical Reference Manual* (agent IDs, skill assignments, prompt templates). Use-case taxonomy is verbatim from `agent-routing-map.md`.
 

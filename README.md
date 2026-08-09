@@ -19,14 +19,14 @@ Each of the 8 experts is an **individual, standalone agent** with its model hard
 
 | Agent | Expert Agent | Model | Use cases (routed by Skill-1) | Skills |
 |-------|--------------|-------|-------------------------------|--------|
-| Agent 1 | [STAR Interviewer](examples/wisetalk-star-agent/) | STAR | `Job_Interview` · `Performance_Review` · `Project_Debrief` · `Resume_Writing` | Skill-3 · 7 · 13 |
-| Agent 2 | [SCRTV Reporter](examples/wisetalk-scrtv-agent/) | SCRTV | `Project_Status_Report` · `Strategy_Proposal` · `Budget_Request` · `Issue_Escalation` | Skill-3 · 7 · 13 |
-| Agent 3 | [MECE Architect](examples/wisetalk-mece-agent/) | MECE / Pyramid | `Logical_Analysis` · `Report_Outlining` · `Meeting_Minutes` · `Brainstorming_Structure` | Skill-3 · 7 · 13 |
-| Agent 4 | [PREP Speaker](examples/wisetalk-prep-agent/) | PREP | `Elevator_Pitch` · `Quick_Meeting_Speech` · `Daily_Standup` · `Public_Comment` | Skill-3 · 7 · 13 |
-| Agent 5 | [SCQA Analyst](examples/wisetalk-scqa-agent/) | SCQA | `Crisis_Management` · `Problem_Solving` · `Conflict_Resolution` · `Urgent_Incident` | Skill-3 · 7 · 13 |
-| Agent 6 | [RIDE Negotiator](examples/wisetalk-ride-agent/) | RIDE | `Salary_Negotiation` · `Client_Deal` · `Vendor_Management` · `Resource_Allocation` | Skill-3 · 7 · 13 |
-| Agent 7 | [FFC Master](examples/wisetalk-ffc-agent/) | FFC | `Team_Recognition` · `Relationship_Building` · `Peer_Feedback` · `Ice_Breaking` | Skill-3 · 7 · 13 |
-| Agent 8 | [Funnel Refiner](examples/wisetalk-funnel-agent/) | Funnel | `Task_Delegation` · `Complex_Instruction` · `Information_Compression` · `Executive_Summary` | Skill-3 · 5 |
+| Agent 1 | [STAR Interviewer](agents/wisetalk-star-agent/) | STAR | `Job_Interview` · `Performance_Review` · `Project_Debrief` · `Resume_Writing` | Skill-3 · 7 · 13 |
+| Agent 2 | [SCRTV Reporter](agents/wisetalk-scrtv-agent/) | SCRTV | `Project_Status_Report` · `Strategy_Proposal` · `Budget_Request` · `Issue_Escalation` | Skill-3 · 7 · 13 |
+| Agent 3 | [MECE Architect](agents/wisetalk-mece-agent/) | MECE / Pyramid | `Logical_Analysis` · `Report_Outlining` · `Meeting_Minutes` · `Brainstorming_Structure` | Skill-3 · 7 · 13 |
+| Agent 4 | [PREP Speaker](agents/wisetalk-prep-agent/) | PREP | `Elevator_Pitch` · `Quick_Meeting_Speech` · `Daily_Standup` · `Public_Comment` | Skill-3 · 7 · 13 |
+| Agent 5 | [SCQA Analyst](agents/wisetalk-scqa-agent/) | SCQA | `Crisis_Management` · `Problem_Solving` · `Conflict_Resolution` · `Urgent_Incident` | Skill-3 · 7 · 13 |
+| Agent 6 | [RIDE Negotiator](agents/wisetalk-ride-agent/) | RIDE | `Salary_Negotiation` · `Client_Deal` · `Vendor_Management` · `Resource_Allocation` | Skill-3 · 7 · 13 |
+| Agent 7 | [FFC Master](agents/wisetalk-ffc-agent/) | FFC | `Team_Recognition` · `Relationship_Building` · `Peer_Feedback` · `Ice_Breaking` | Skill-3 · 7 · 13 |
+| Agent 8 | [Funnel Refiner](agents/wisetalk-funnel-agent/) | Funnel | `Task_Delegation` · `Complex_Instruction` · `Information_Compression` · `Executive_Summary` | Skill-3 · 5 |
 
 **Agent 8 note:** the Funnel Refiner is a "reverser" — it compresses long text (Skill-5) and does not run the coaching loop (no Skill-7/Skill-13). Its stop condition is mechanical (compressed to <20% of the original), not judgment-based.
 
@@ -37,6 +37,7 @@ Each of the 8 experts is an **individual, standalone agent** with its model hard
 | [_wisetalk_extracted.md](_wisetalk_extracted.md) | **The Master Spec v2.0** — the WiseTalk specification text the whole system is built from |
 | [reference/wisetalk-model-catalog.md](reference/wisetalk-model-catalog.md) | **The 8 WiseTalk models' master** — structure, fill-in fields, generation/compression prompts, critique dimensions, use cases per model; each agent's `config/model-reference.md` is its section's copy (baked in at build time, no runtime catalog reads) |
 | [reference/behavioral-guidelines.md](reference/behavioral-guidelines.md) | **All-agents baseline** — universal guidelines (Think Before Acting · Goal-Driven Execution · Loop Discipline + communication style) inherited by every agent via Element 2 |
+| [agents/wisetalk-router-agent/](agents/wisetalk-router-agent/) | **The Router Agent** — entry gatekeeper (intent recognition, context memory) that dispatches to the 8 experts; `agents/` holds all 9 standalone agent packages, each with agent-spec, intake form, validation checklist, and `claude-code/` implementation |
 | [templates/00-intake-form.md](templates/00-intake-form.md) | **The input** — responsibilities, objective, architecture (+ derivation map to all 15 elements) |
 | [templates/01-agent-spec-template.md](templates/01-agent-spec-template.md) | **The core** — 15-element specification template with tier tags, options & trade-offs |
 | [templates/03-claude-code-mapping.md](templates/03-claude-code-mapping.md) | **The generator** — maps each element to Claude Code files, with copy-paste skeletons |
