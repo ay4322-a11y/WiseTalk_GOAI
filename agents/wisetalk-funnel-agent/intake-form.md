@@ -42,7 +42,7 @@
 
 | # | Responsibility | Trigger (on-demand / scheduled / event) | Expected output |
 |---|----------------|------------------------------------------|-----------------|
-| R1 | Validate the single mandatory card — check `OriginalText` is non-empty and more than 50 words; ask if missing (Skill-3) | on-demand (agent entry / "Compress" click with empty or short text) | `force_fill` question or `ready_to_generate` |
+| R1 | Validate the single mandatory card — check `OriginalText` is non-empty and more than 50 words; ask if missing (Skill-3) | on-demand (agent entry / "Compress" click with empty or short text) | `force_fill_batch` question or `ready_to_generate` |
 | R2 | Compress the long text — denoise to <20% of original length, action items and deadlines verbatim (Skill-5) | on-demand (after Skill-3 passes) | `{compressed_text, word_count_original, word_count_compressed, loss_rate, verification}` |
 | R3 | Verify — run the acceptance checks (≤20% length, actions preserved, no invention), re-compress up to 2 passes | on-demand (immediately after each Skill-5 output) | `verification` verdict or a re-compression |
 | R4 | Deliver & persist — append the disclaimer, deliver the summary + loss_rate, save the round (Elements 14/15) | on-demand (on accept or stop condition) | Delivered summary + saved `memory/` round |
@@ -60,7 +60,7 @@
 flowchart TD
     U[Router Agent handoff<br/>use_case + long text] --> A[wisetalk-funnel-agent<br/>Funnel Refiner]
     A --> S3[mandatory-fill-in skill<br/>Skill-3: validate OriginalText<br/>(non-empty, >50 words)]
-    S3 -- missing/short text --> U2[force_fill question<br/>→ user]
+    S3 -- missing/short text --> U2[force_fill_batch question<br/>→ user]
     S3 -- ready_to_generate --> S5[funnel-compression skill<br/>Skill-5: denoise to <20%]
     S5 --> V{Acceptance checks<br/>length / actions / invention}
     V -- fail (pass < 2) --> S5

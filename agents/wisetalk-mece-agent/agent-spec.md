@@ -60,7 +60,7 @@
 | Field | Specification |
 |-------|---------------|
 | Planning trigger | Every invocation — the coaching pipeline is fixed |
-| Decomposition pattern | Skill-3 (validate MECE cards) → Skill-7 (generate pyramid document) → Skill-13 (critique) → user accept/modify loop → deliver |
+| Decomposition pattern | Skill-3 (mandatory fill-in of MECE cards: sufficiency gate + batch collection) → Skill-7 (generate pyramid document) → Skill-13 (critique) → user accept/modify loop → deliver |
 | Step granularity | One step = one skill invocation, one user choice, or one check |
 | Re-planning rule | Only on a failed self-check (re-run the failing skill once) or on a user revision request (loop back to Skill-7 with the request) |
 
@@ -101,7 +101,7 @@
 
 | Skill | Wraps (tools/logic) | Input → Output | Failure mode |
 |-------|---------------------|----------------|--------------|
-| `mandatory-fill-in` (Skill-3) | Completeness check against the agent body's baked-in MECE fields | `agent_model` + `use_case` + `filled_data` → `force_fill` / `ready_to_generate` | Missing model reference section → error; unparseable data → ask to resubmit; 3 skips → `[AI Placeholder]` passes |
+| `mandatory-fill-in` (Skill-3) | Completeness check against the agent body's baked-in MECE fields | `agent_model` + `use_case` + `filled_data` → `force_fill_batch` / `ready_to_generate` | Missing model reference section → error; unparseable data → ask to resubmit; 3 skips → `[AI Placeholder]` passes |
 | `language-polishing` (Skill-7) | Baked-in MECE generation prompt + synthesis | `filled_data` + optional `user_revision_request` → `{final_text, word_count}` | Missing template → error; empty data → refuse (back to Skill-3); non-MECE model → error (each model has its own agent) |
 | `iterative-critique` (Skill-13) | Baked-in MECE critique dimensions + 3-point review | `draft_text` + `iteration_count` → `display_critique` / `force_exit` | Missing dimensions → error; iteration ≥ 3 → force-exit; non-MECE model → error |
 

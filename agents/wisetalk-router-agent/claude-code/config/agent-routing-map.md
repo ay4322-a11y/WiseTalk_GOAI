@@ -33,14 +33,21 @@ Read by Skill-1 (`intent-routing`) at classification time. Update this file to c
 | `Team_Recognition` · `Relationship_Building` · `Peer_Feedback` · `Ice_Breaking` | Agent 7 (FFC) |
 | `Task_Delegation` · `Complex_Instruction` · `Information_Compression` · `Executive_Summary` | Agent 8 (Funnel) |
 
-## Fallback rules (mandatory)
+## Fallback rules (mandatory — three-band confidence model)
 
-1. **Low confidence:** classification confidence < **0.6** → route to `GENERAL_CHAT` (generic AI mode; no Expert Agent). `use_case` = `General_Communication`.
-2. **Generic input** (no specific communication model fits — e.g. "help me write an email") → default to **Agent 2 (SCRTV)** with `use_case` = `General_Communication`, `confidence` = 0.5.
-3. **Confidence threshold constant:** `CONFIDENCE_THRESHOLD = 0.6` — if this needs tuning, change it here and in Skill-1's rules; never in the agent body.
+1. **High confidence (≥ 0.6):** route to the chosen Expert Agent normally. `status` = `success`.
+2. **Borderline confidence (0.4 ≤ c < 0.6, with a workplace signal):** do NOT degrade silently. Return `status` = `clarify_intent` with the **top 2 candidate agents** (each with `agent`, `use_case`, `confidence`, `explanation`) and a `question_to_user` so the client disambiguates. This replaces the old behavior where borderline input fell to `GENERAL_CHAT` with no Expert Agent triggered.
+3. **Low confidence (< 0.4) or clearly non-workplace input:** route to `GENERAL_CHAT` (generic AI mode; no Expert Agent). `use_case` = `General_Communication`, `status` = `fallback`.
+4. **Generic input** (no specific communication model fits — e.g. "help me write an email") → default to **Agent 2 (SCRTV)** with `use_case` = `General_Communication`, `confidence` = 0.5, `status` = `weak_guess` — the default is disclosed as a guess, never presented as a confident match.
+5. **Named constants:**
+   - `CONFIDENCE_THRESHOLD = 0.6` (high band floor)
+   - `CLARIFICATION_BAND_LOW = 0.4` (borderline band floor)
+   - Max `CLARIFICATION_ROUNDS = 2` — after 2 unresolved clarification rounds, fall back to the highest-confidence candidate and disclose that routing is uncertain.
+   If a constant needs tuning, change it here and in Skill-1's rules; never in the agent body.
 
 ## Versioning
 
 | Version | Date | Change |
 |---------|------|--------|
 | 1.0 | 2026-08-09 | Initial — all 8 agents and 32 use cases from the WiseTalk spec |
+| 1.1 | 2026-08-10 | Three-band confidence model — borderline (0.4–0.6) returns `clarify_intent` with top 2 candidates instead of falling to `GENERAL_CHAT`; generic default marked `weak_guess` |

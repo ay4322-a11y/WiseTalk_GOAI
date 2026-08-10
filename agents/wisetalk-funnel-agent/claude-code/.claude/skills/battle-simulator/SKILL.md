@@ -98,3 +98,12 @@ Solution: clarify — critique reviews the draft before acceptance; the arena ro
 
 ## Fallback
 If the user refuses to provide a draft or proposal: stop and ask what they want to practice. If the transcript handoff to Skill-9 isn't available (no scoring yet deployed): still deliver the transcript and summary — the battle is complete without the score. If a turn is interrupted: deliver the transcript accumulated so far with a visible note — never fabricate rounds.
+
+## Customization points
+
+- **Persona defaults:** Step 1's default map (Strict Financial Controller / Demanding Interviewer / Tough Buyer) is a small role set — extend the map per use case as the arena grows; custom personas always work.
+- **Persona prompt:** the Master Spec's CFO prompt is the verbatim default; the custom template parameterizes name + behaviors. Swap the challenge questions ("Where is the ROI? What are the risks? What is Plan B?") for other domains by editing the template in Step 2.
+- **Hostility markers:** Step 3's marker list (profanity, ALL-CAPS, repeated "!", threats, "useless/stupid", demands to stop) is the explicit layer; tone judgment is the second layer. Tighten or loosen per policy (e.g. add words specific to your user base).
+- **Turn cap:** the 12-round cap bounds a battle — raise/lower per UX preference; the cap must never be removed (loop discipline).
+- **Valve tension:** the de-escalation reply sets `tension_score` to exactly 0.2 (PDF value) — change with the output contract if a downstream chart expects a different floor.
+- **Transcript handoff:** the closing summary `{rounds, valve_activated, final_tension_score}` is the contract Skill-9 `battle-scoring` consumes — keep it stable when extending the battle.

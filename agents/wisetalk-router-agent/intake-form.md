@@ -22,7 +22,7 @@
 **Success criteria:**
 
 1. Every input is classified to exactly one `routed_agent` (from the 8 named agents) or the `GENERAL_CHAT` fallback — never zero, never two.
-2. Every routing decision carries a `confidence` float in [0, 1]; confidence < 0.6 always yields the `GENERAL_CHAT` fallback with `status = "fallback"`.
+2. Every routing decision carries a `confidence` float in [0, 1]; ≥ 0.6 routes to the expert; borderline (0.4–0.6, workplace signal) yields `clarify_intent` with the top 2 candidates; < 0.4 yields the `GENERAL_CHAT` fallback with `status = "fallback"`.
 3. Generic input with no clear model fit (e.g. "help me write an email") defaults to Agent 2 (SCRTV), `use_case = General_Communication`.
 4. Every output includes a `chat_history_string` built from the last 10 conversation rounds (empty string on first turn).
 

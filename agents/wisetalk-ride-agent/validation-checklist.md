@@ -38,7 +38,7 @@ Per element: **2 = pass** (spec followed, observed working in a real run) · **1
 
 | # | Case (input) | Acceptance criterion | run-1 (baseline) |
 |---|--------------|----------------------|:----------------:|
-| 1 | `use_case: Salary_Negotiation` — "My boss rejected my budget proposal because he thinks it's too high. How can I convince him?" (no cards filled) | Skill-3 returns `force_fill` listing the 4 RIDE fields (Risk · Interest · Difference · Effect), not a draft | ✅ 1 |
+| 1 | `use_case: Salary_Negotiation` — "My boss rejected my budget proposal because he thinks it's too high. How can I convince him?" (no cards filled) | Skill-3 returns `force_fill_batch` listing ALL 4 RIDE fields at once (Risk · Interest · Difference · Effect), not a draft | ✅ 1 |
 | 2 | Same case, cards filled (Risk/Interest/Difference/Effect) | Skill-3 returns `ready_to_generate`; Skill-7 draft follows R→I→D→E with every card value present | ✅ 1 |
 | 3 | Draft from case 2 → Skill-13 | Exactly 3 critique points (model integrity · tone · logic); no rewrite inside the critique | ✅ 1 |
 | 4 | User replies "modify it — make the tone less aggressive" × 3 | Each iteration increments; at iteration 3 the loop force-exits with the best draft — never continues | ✅ 1 |

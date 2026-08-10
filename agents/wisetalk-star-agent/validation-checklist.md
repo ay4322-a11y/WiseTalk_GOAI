@@ -38,7 +38,7 @@ Per element: **2 = pass** (spec followed, observed working in a real run) · **1
 
 | # | Case (input) | Acceptance criterion | run-1 (baseline) |
 |---|--------------|----------------------|:----------------:|
-| 1 | `use_case: Job_Interview` — "I have an interview tomorrow for a project manager role. They'll ask 'tell me about a time you handled a conflict.'" (no cards filled) | Skill-3 returns `force_fill` listing the 4 STAR fields (Situation · Task · Action · Result), not a draft | ✅ 1 |
+| 1 | `use_case: Job_Interview` — "I have an interview tomorrow for a project manager role. They'll ask 'tell me about a time you handled a conflict.'" (no cards filled) | Skill-3 returns `force_fill_batch` listing ALL 4 STAR fields at once (Situation · Task · Action · Result), not a draft | ✅ 1 |
 | 2 | Same case, cards filled (Situation/Task/Action/Result) | Skill-3 returns `ready_to_generate`; Skill-7 draft follows S→T→A→R with every card value present | ✅ 1 |
 | 3 | Draft from case 2 → Skill-13 | Exactly 3 critique points (model integrity · tone · logic); no rewrite inside the critique | ✅ 1 |
 | 4 | User replies "modify it — make it more concise" × 3 | Each iteration increments; at iteration 3 the loop force-exits with the best draft — never continues | ✅ 1 |

@@ -42,7 +42,7 @@
 
 | # | Responsibility | Trigger (on-demand / scheduled / event) | Expected output |
 |---|----------------|------------------------------------------|-----------------|
-| R1 | Force the mandatory fill-in cards — validate the 4 PREP fields (Point · Reason · Example · Action), ask for missing ones (Skill-3) | on-demand (agent entry / "Generate" click with empty fields) | `force_fill` questions or `ready_to_generate` |
+| R1 | Force the mandatory fill-in cards — validate the 4 PREP fields (Point · Reason · Example · Action), ask for missing ones (Skill-3) | on-demand (agent entry / "Generate" click with empty fields) | `force_fill_batch` questions or `ready_to_generate` |
 | R2 | Generate the tight spoken answer — synthesize filled data per the PREP generation prompt (Skill-7) | on-demand (after Skill-3 passes, or a revision request) | `{final_text, word_count}` draft |
 | R3 | Critique & iterate — 3 actionable points per round, accept/modify loop, 3-iteration cap (Skill-13) | on-demand (immediately after each Skill-7 output) | `display_critique` + accept/modify question, or `force_exit` |
 | R4 | Deliver & persist — append the disclaimer, deliver the final text, save the round (Elements 14/15) | on-demand (on accept or force-exit) | Delivered text + saved `memory/` round |
@@ -60,7 +60,7 @@
 flowchart TD
     U[Router Agent handoff<br/>use_case + user situation] --> A[wisetalk-prep-agent<br/>PREP Speaker]
     A --> S3[mandatory-fill-in skill<br/>Skill-3: validate 4 PREP cards]
-    S3 -- missing fields --> U2[force_fill questions<br/>→ user]
+    S3 -- missing fields --> U2[force_fill_batch questions<br/>→ user]
     S3 -- ready_to_generate --> S7[language-polishing skill<br/>Skill-7: generate spoken answer]
     S7 --> S13[iterative-critique skill<br/>Skill-13: 3 points + accept/modify]
     S13 -- modify (iter < 3) --> S7

@@ -68,11 +68,11 @@ Model knowledge baked into the agent body (`## Model reference — FFC`), mirror
 
 | Skill | Purpose | Source |
 |-------|---------|--------|
-| `mandatory-fill-in` (Skill-3) | Validates the 3 FFC cards; force_fill for missing fields; gates generation | `.claude/skills/mandatory-fill-in/SKILL.md` (identical across agents 1-8) |
+| `mandatory-fill-in` (Skill-3) | Validates the 3 FFC cards; force_fill_batch for missing fields; gates generation | `.claude/skills/mandatory-fill-in/SKILL.md` (identical across agents 1-8) |
 | `language-polishing` (Skill-7) | Generates the recognition message from filled data per the FFC generation prompt | `.claude/skills/language-polishing/SKILL.md` (identical across agents 1-7) |
 | `iterative-critique` (Skill-13) | 3 actionable points (model integrity · tone & audience fit · logic & persuasion gaps) + accept/modify loop, 3-iteration cap | `.claude/skills/iterative-critique/SKILL.md` (identical across agents 1-7) |
 
-Skill order is fixed: Skill-3 (validate) → Skill-7 (generate) → Skill-13 (critique) → accept/modify loop, capped at 3 iterations. Never generate before validation passes; never rewrite inside a critique.
+Skill order is fixed: Skill-3 (mandatory fill-in, with upfront sufficiency gate + batch collection) → Skill-7 (generate) → Skill-13 (critique) → accept/modify loop, capped at 3 iterations. Never generate before validation passes; never rewrite inside a critique.
 
 ## Element 10 — MCP Protocol (external services)
 

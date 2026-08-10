@@ -14,12 +14,20 @@ Output: strict JSON — `{ "action": "compressed", "compressed_text": "...", "wo
 1. **Load the compression prompt** — Read the `{{compression prompt location — the section or file where the model's compression prompt and acceptance rules live, e.g. a "Model reference" section in the agent instructions or a config file}}` and extract the compression prompt. Done when the denoising prompt and acceptance rules are in context; if the section is missing → stop, report `{"action": "error", "reason": "No compression prompt defined"}`.
 2. **Count the original** — record `word_count_original` (whitespace-separated tokens). Done when the length is known; the compression target is `word_count_original × {{target ratio — e.g. 0.2}}`.
 3. **Extract the core** — apply the compression prompt: extract the absolute core — **Action items, Data, and Conclusions** — and compress to less than {{target ratio}} of the original length. Preserve action items and deadlines **verbatim** — never paraphrase a deadline, owner, or required action. Done when the compressed text contains every action item and deadline from the original.
-4. **Verify** — run the acceptance checks:
+4. **Hallucination gate (Skill-12) — run BEFORE the compressed text can reach the user** — the original pasted text is the ground truth, so `--data` carries it verbatim (the script lives in the sibling `hallucination-check` skill folder — from this skill's directory, `../hallucination-check/scripts/hallucination-gate.py`):
+   `python ../hallucination-check/scripts/hallucination-gate.py --mode gate --data "<the original text>" --text <compressed text>`
+   - `PASS` (exit 0) → proceed to Step 5.
+   - `WARN` (exit 1) → use `safe_text` (AI-Inferred markers + disclaimer) as the compressed text; add a gap note naming the flagged values; proceed to Step 5.
+   - `BLOCK` (exit 3) → do NOT return this text. Re-compress with the gate's `regeneration_instruction` as the constraint (increment the internal retry counter, max 2). Loop back to Step 3.
+   - Retries exhausted (still BLOCK after 2) → re-run with `--force-warn` (exit 1), use the marked `safe_text`, add a gap note that re-compression retries were exhausted.
+   - `fallback` (exit 4) → use `safe_text` (text + disclaimer), add a gap note.
+   Done when: the verdict is PASS or WARN — a BLOCK never leaves this skill.
+5. **Verify** — run the acceptance checks:
    - `length_ok`: `word_count_compressed < word_count_original × {{target ratio}}` — if not, compress tighter and re-check (max 2 re-compression passes, then deliver the best with a gap note)
    - `actions_preserved`: every action item and deadline from the original appears verbatim in the compressed text — if any is missing, add it back verbatim
    - `no_invention`: nothing in the compressed text that is not in the original — no added facts, opinions, or instructions
    Done when all three checks pass (or the 2-pass cap is hit with a gap note).
-5. **Report** — compute `loss_rate` = 1 − (`word_count_compressed` / `word_count_original`), rounded to 2 decimals, and return the compressed text with the verification results.
+6. **Report** — compute `loss_rate` = 1 − (`word_count_compressed` / `word_count_original`), rounded to 2 decimals, and return the compressed text with the verification results.
 
 ## Failure handling
 

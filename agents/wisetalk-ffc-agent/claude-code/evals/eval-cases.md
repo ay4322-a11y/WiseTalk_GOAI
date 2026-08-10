@@ -7,7 +7,7 @@ Hill-climbing eval set for the FFC Master — Agent 7 of the 8 WiseTalk Expert C
 **User:** "use_case: Team_Recognition — I want to recognise a team member who turned a difficult client meeting around last week."
 
 **Expected behavior:**
-- [ ] Agent runs Skill-3 first: asks for the 3 FFC cards (Feeling · Fact · Compare) via force_fill if missing
+- [ ] Agent runs Skill-3 first: asks for the 3 FFC cards (Feeling · Fact · Compare) via force_fill_batch if missing
 - [ ] Generates warm, specific, behaviour-based recognition: the Feeling, the concrete Fact that caused it, the Compare showing how it stands out
 - [ ] Runs Skill-13: exactly 3 actionable critique points, then an accept/modify question
 - [ ] On accept: delivers final text + mandatory disclaimer + delivery summary JSON
@@ -91,6 +91,46 @@ Hill-climbing eval set for the FFC Master — Agent 7 of the 8 WiseTalk Expert C
 
 ---
 
+## Case 10 — Input gate on the fill-in cards (pre-output position)
+
+**Scenario:** The user fills an FFC card with an unverified claim (e.g. Fact: "the team's output grew 30% last quarter") with no source.
+
+**Expected behavior:**
+- [ ] Skill-12 runs as the **input gate** (`--mode input`) on the card data BEFORE any generation — no draft is produced before the check
+- [ ] 3+ unverified values → BLOCK: the agent asks the user for real values instead of generating from the invented input
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: real `--mode input` runs — BLOCK exit 3 on 3+ unverified claims, WARN on projection/authority phrasing, PASS on clean card values; BLOCK produces no draft)
+
+## Case 11 — Output gate BLOCK → regeneration (validity gating)
+
+**Scenario:** A draft carries 3+ invented figures the user never provided (e.g. "15% growth", "$50,000 savings", "a 2024 survey").
+
+**Expected behavior:**
+- [ ] Skill-12 **output gate** returns BLOCK before the draft reaches the user
+- [ ] Skill-7 regenerates with the gate's `regeneration_instruction` as the revision constraint; the clean regeneration passes (PASS)
+- [ ] The BLOCKed text is never shown to the user
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: real `--mode gate` run — 3+ invented figures → BLOCK exit 3 with regeneration_instruction naming them; regenerated clean text → PASS exit 0; BLOCKed text never shown)
+
+## Case 12 — Retry exhaustion → WARN delivery (retry cap)
+
+**Scenario:** The draft keeps inventing values through 2 regenerations (still BLOCK).
+
+**Expected behavior:**
+- [ ] After 2 retries the gate runs with `--force-warn`: verdict downgraded to WARN
+- [ ] Invented values wrapped in `[AI Inferred: Please verify]`; gap note states "BLOCK downgraded to WARN after 2 regeneration retries exhausted"
+- [ ] Mandatory disclaimer appended exactly once; text still delivers — the loop never runs forever
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: real `--force-warn` run — BLOCK downgraded to WARN exit 1, gap note "BLOCK downgraded to WARN after 2 regeneration retries exhausted", markers applied, disclaimer once)
+
+## Case 13 — Gate PASS (clean draft)
+
+**Scenario:** Draft contains only user-provided card values.
+
+**Expected behavior:**
+- [ ] Gate returns PASS (exit 0)
+- [ ] Text delivered unmarked; mandatory disclaimer appended exactly once
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: clean draft → PASS exit 0, text delivered unmarked, mandatory disclaimer appended exactly once)
+
+---
+
 ## Score card (latest run: 2026-08-09)
 
 | Case | Result |
@@ -102,5 +142,9 @@ Hill-climbing eval set for the FFC Master — Agent 7 of the 8 WiseTalk Expert C
 | 5 | ✅ PASS |
 | 6 | ✅ PASS |
 | 7 | ✅ PASS |
+| 10 | ✅ 1 |
+| 11 | ✅ 1 |
+| 12 | ✅ 1 |
+| 13 | ✅ 1 |
 
-**Score: 26/26** — hill-climbing baseline for the FFC agent. Regression rule: no drop below 26/26 after any spec change.
+**Score: 26/26** — hill-climbing baseline for the FFC agent. Regression rule: no drop below 26/26 after any spec change. All new gate cases ✅ on run-2 (2026-08-10) — script-contract E2E.

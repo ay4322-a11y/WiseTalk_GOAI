@@ -62,10 +62,10 @@ Model knowledge baked into the agent body (`## Model reference — Communication
 
 | Skill | Purpose | Source |
 |-------|---------|--------|
-| `mandatory-fill-in` (Skill-3) | Validates the single `OriginalText` card (non-empty, >50 words); force_fill for missing input; gates compression | `.claude/skills/mandatory-fill-in/SKILL.md` (identical across agents 1-8) |
+| `mandatory-fill-in` (Skill-3) | Validates the single `OriginalText` card (non-empty, >50 words); force_fill_batch for missing input; gates compression | `.claude/skills/mandatory-fill-in/SKILL.md` (identical across agents 1-8) |
 | `funnel-compression` (Skill-5) | Denoises the long text to <20% of its length; action items and deadlines verbatim; reports loss_rate | `.claude/skills/funnel-compression/SKILL.md` (Funnel only) |
 
-Skill order is fixed: Skill-3 (validate) → Skill-5 (compress) → verify → deliver. **No Skill-7, no Skill-13** — this agent is a reverser, not a generator. Never compress before validation passes.
+Skill order is fixed: Skill-3 (mandatory fill-in, single `OriginalText` card, with upfront sufficiency gate + batch collection) → Skill-5 (compress) → verify → deliver. **No Skill-7, no Skill-13** — this agent is a reverser, not a generator. Never compress before validation passes.
 
 ## Element 10 — MCP Protocol (external services)
 

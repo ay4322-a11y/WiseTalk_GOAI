@@ -71,3 +71,11 @@ Solution: report the limitation to the user; the verdict is still the determinis
 
 ## Fallback
 If Python is unavailable or the script errors: say so explicitly, show the raw points to the user, and hand the MECE judgement back to the human — do NOT substitute an eyeballed verdict, and do NOT report `is_valid` without a script run.
+
+## Customization points
+
+- **Dimension library** — `scripts/mece-check.py`'s `DIMENSIONS` dict is the fixed omission standard (default: 4M1E Human/Machine/Material/Method/Environment). Change the keys and keyword lists to match another domain's exhaustiveness standard.
+- **Synonym map** — `SYNONYMS` in the script grounds subset detection for the domain's vocabulary (e.g. "overtime" → labor, "pay" → cost). Extend with domain terms; keep it deterministic.
+- **Keyword coverage** — when a point list is reported as missing a dimension it actually covers, add the missing term to that dimension's keyword list (see ERR-001 pattern).
+- **Description trigger** — rewrite for the deploying agent's routing (e.g. "when a SCRTV/MECE expert receives multiple arguments to structure"); keep one trigger per branch.
+- **Language coverage** — the library is English-only (D-007); non-English points get verbatim-substring overlap detection only. Add other languages' keyword lists to `DIMENSIONS`/`SYNONYMS` when needed.

@@ -8,9 +8,9 @@ One of 8 individual Expert Agents (STAR / SCRTV / MECE / PREP / SCQA / RIDE / FF
 
 - All agents follow the universal baseline in @docs/behavioral-guidelines.md §1 (Think Before Acting · Goal-Driven Execution · Loop Discipline + its communication style). The coding addendum (§2) doesn't apply — no agent here writes code. No deviations.
 - The agent body's `## Model reference — Communication Funnel` section is the **baked-in source of truth** for this model: fill-in field, compression prompt, acceptance checks. No catalog file is read at runtime; `config/model-reference.md` is the human-readable copy (keep it in sync with the agent body).
-- Skill order is fixed: Skill-3 (mandatory fill-in, single `OriginalText` card) → Skill-5 (funnel compression) → deliver. **No Skill-7, no Skill-13** — the Funnel is a one-way reverser.
+- Skill order is fixed: Skill-3 (mandatory fill-in, single `OriginalText` card, with upfront sufficiency gate + batch collection) → Skill-5 (funnel compression) → deliver. **No Skill-7, no Skill-13** — the Funnel is a one-way reverser.
 - Optional Battle Arena: after accepting the summary, the user can type `battle-simulator` (Skill-8) to role-play a hostile counterparty against the delivered summary; when the arena ends, run Skill-9 `battle-scoring` on the transcript.
-- Skill-12 `hallucination-check` runs on every accepted summary before delivery: invented values the user never provided are wrapped in the `[AI Inferred: Please verify]` marker and the mandatory disclaimer is appended (fail-soft — it never blocks delivery).
+- Skill-12 `hallucination-check` is a pre-output gate: it validates the OriginalText before compression and the compressed result before delivery. BLOCK triggers re-compression (max 2 retries); WARN marks invented values `[AI Inferred: Please verify]` with a gap note; the mandatory disclaimer is always appended.
 - Compression is gated: never compress text of 50 words or fewer.
 - Acceptance checks are the verdict: ≤20% length, action items and deadlines verbatim, no invented content. Never fabricate an action item or deadline.
 - Agent writes are limited to `drafts/` and `memory/`. Any other write requires explicit user approval.

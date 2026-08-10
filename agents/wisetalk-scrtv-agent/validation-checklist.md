@@ -38,7 +38,7 @@ Per element: **2 = pass** (spec followed, observed working in a real run) · **1
 
 | # | Case (input) | Acceptance criterion | run-1 (baseline) |
 |---|--------------|----------------------|:----------------:|
-| 1 | `use_case: Project_Status_Report` — "Our rollout is behind schedule and over budget; I need to report this to management next week." (no cards filled) | Skill-3 returns `force_fill` listing the 5 SCRTV fields (Scene · Conflict · Reason · Tactics · Value), not a draft | ✅ 1 |
+| 1 | `use_case: Project_Status_Report` — "Our rollout is behind schedule and over budget; I need to report this to management next week." (no cards filled) | Skill-3 returns `force_fill_batch` listing ALL 5 SCRTV fields at once (Scene · Conflict · Reason · Tactics · Value), not a draft | ✅ 1 |
 | 2 | Same case, cards filled (Scene/Conflict/Reason/Tactics/Value) | Skill-3 returns `ready_to_generate`; Skill-7 draft follows S→C→R→T→V with every card value present | ✅ 1 |
 | 3 | Draft from case 2 → Skill-13 | Exactly 3 critique points (model integrity · tone · logic); no rewrite inside the critique | ✅ 1 |
 | 4 | User replies "modify it — make the tone less formal" × 3 | Each iteration increments; at iteration 3 the loop force-exits with the best draft — never continues | ✅ 1 |

@@ -27,7 +27,7 @@ Hill-climbing eval set for the Funnel Refiner — Agent 8 of the 8 WiseTalk Expe
 **User:** "use_case: Information_Compression — compress this: 'Remind the team about Friday's review.'"
 
 **Expected behavior:**
-- [ ] Skill-3 gate refuses: text is 50 words or fewer → `force_fill` asks for the full text
+- [ ] Skill-3 gate refuses: text is 50 words or fewer → `force_fill_batch` asks for the full text
 - [ ] No compression attempt on the short text
 - [ ] Result: PASS
 
@@ -91,6 +91,46 @@ Hill-climbing eval set for the Funnel Refiner — Agent 8 of the 8 WiseTalk Expe
 
 ---
 
+## Case 10 — Input gate on the OriginalText card (pre-output position)
+
+**Scenario:** The pasted OriginalText itself carries unverified claims (e.g. "we will grow 30% next quarter") with no source.
+
+**Expected behavior:**
+- [ ] Skill-12 runs as the **input gate** (`--mode input`) on the OriginalText BEFORE compression — no summary is produced before the check
+- [ ] 3+ unverified values → BLOCK: the agent asks the user for the real text instead of compressing invented claims
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: real `--mode input` runs — BLOCK exit 3 on 3+ unverified claims, WARN on projection/authority phrasing, PASS on clean card values; BLOCK produces no draft)
+
+## Case 11 — Output gate BLOCK → re-compression (validity gating)
+
+**Scenario:** The compressed summary carries 3+ invented figures never present in the original (e.g. "15% growth", "$50,000 savings").
+
+**Expected behavior:**
+- [ ] Skill-12 **output gate** returns BLOCK before the summary reaches the user
+- [ ] Skill-5 re-compresses with the gate's `regeneration_instruction` as the constraint; the clean re-compression passes (PASS)
+- [ ] The BLOCKed summary is never shown to the user
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: real `--mode gate` run — 3+ invented figures → BLOCK exit 3 with regeneration_instruction naming them; regenerated clean text → PASS exit 0; BLOCKed text never shown)
+
+## Case 12 — Retry exhaustion → WARN delivery (retry cap)
+
+**Scenario:** The compressed summary keeps inventing values through 2 re-compressions (still BLOCK).
+
+**Expected behavior:**
+- [ ] After 2 retries the gate runs with `--force-warn`: verdict downgraded to WARN
+- [ ] Invented values wrapped in `[AI Inferred: Please verify]`; gap note states "BLOCK downgraded to WARN after 2 regeneration retries exhausted"
+- [ ] Mandatory disclaimer appended exactly once; summary still delivers — the loop never runs forever
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: real `--force-warn` run — BLOCK downgraded to WARN exit 1, gap note "BLOCK downgraded to WARN after 2 regeneration retries exhausted", markers applied, disclaimer once)
+
+## Case 13 — Gate PASS (clean summary)
+
+**Scenario:** Summary contains only content verbatim from the original text.
+
+**Expected behavior:**
+- [ ] Gate returns PASS (exit 0)
+- [ ] Summary delivered unmarked; mandatory disclaimer appended exactly once
+- [ ] Result: ✅ PASS (run-2 2026-08-10 E2E: clean draft → PASS exit 0, text delivered unmarked, mandatory disclaimer appended exactly once)
+
+---
+
 ## Score card (latest run: 2026-08-09)
 
 | Case | Result |
@@ -102,5 +142,9 @@ Hill-climbing eval set for the Funnel Refiner — Agent 8 of the 8 WiseTalk Expe
 | 5 | ✅ PASS |
 | 6 | ✅ PASS |
 | 7 | ✅ PASS |
+| 10 | ✅ 1 |
+| 11 | ✅ 1 |
+| 12 | ✅ 1 |
+| 13 | ✅ 1 |
 
-**Score: 26/26** — hill-climbing baseline for the Funnel agent (element score 20/26: Elements 4, 6, 7, 10, 13 N/A). Regression rule: no drop below 26/26 after any spec change.
+**Score: 26/26** — hill-climbing baseline for the Funnel agent (element score 20/26: Elements 4, 6, 7, 10, 13 N/A). Regression rule: no drop below 26/26 after any spec change. All new gate cases ✅ on run-2 (2026-08-10) — script-contract E2E.

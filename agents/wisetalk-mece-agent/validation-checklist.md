@@ -38,7 +38,7 @@ Per element: **2 = pass** (spec followed, observed working in a real run) · **1
 
 | # | Case (input) | Acceptance criterion | run-1 (baseline) |
 |---|--------------|----------------------|:----------------:|
-| 1 | `use_case: Logical_Analysis` — "I need to structure my analysis of why sales dropped last quarter into a clear recommendation for the board." (no cards filled) | Skill-3 returns `force_fill` listing the 3 MECE fields (Conclusion · Arguments · Evidence), not a draft | ✅ 1 |
+| 1 | `use_case: Logical_Analysis` — "I need to structure my analysis of why sales dropped last quarter into a clear recommendation for the board." (no cards filled) | Skill-3 returns `force_fill_batch` listing ALL 3 MECE fields at once (Conclusion · Arguments · Evidence), not a draft | ✅ 1 |
 | 2 | Same case, cards filled (Conclusion/Arguments/Evidence) | Skill-3 returns `ready_to_generate`; Skill-7 draft follows the pyramid structure (conclusion first, MECE arguments, evidence) with every card value present | ✅ 1 |
 | 3 | Draft from case 2 → Skill-13 | Exactly 3 critique points (model integrity · tone · logic); no rewrite inside the critique | ✅ 1 |
 | 4 | User replies "modify it — make it more concise" × 3 | Each iteration increments; at iteration 3 the loop force-exits with the best draft — never continues | ✅ 1 |

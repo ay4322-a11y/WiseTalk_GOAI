@@ -71,3 +71,12 @@ Solution: clarify — drafts get 3 critique points during the coaching loop; bat
 
 ## Fallback
 If the transcript is missing: ask for it — never score an invented battle. If the transcript has fewer than 3 rounds: return the Master Spec error verbatim. If the judge output won't parse: re-emit once, then deliver the best-effort scores with a gap note — never fabricate a clean report.
+
+## Customization points
+
+- **Round definition:** a round = one user turn + one `ai_reply` exchange (matches battle-simulator's "Round N" transcript format). Change the definition only together with battle-simulator's transcript format.
+- **Score dimensions:** the Master Spec contract fixes `logic`, `eq`, `response_speed`, `persuasion`. Add/rename dimensions only with the downstream consumers (Skill-10 aggregation keys, dashboard radar chart).
+- **Judging prompt:** Step 2's prompt is the Master Spec's judge prompt verbatim — tighten or loosen scoring rubrics (e.g. define what makes a 90 vs a 60 per dimension) by extending the prompt while keeping the output contract.
+- **Minimum rounds:** the <3 error is the Master Spec's exception. Raise the bar (e.g. <4) for higher-confidence scores if the UX tolerates more short-battle errors.
+- **Valve stance:** the judge is required to treat valve activation neutrally. If policy ever wants to acknowledge it positively (self-regulation), change the ## Important rule and re-run TC-202.
+- **Skill-10 hook:** the persistence note ("Skill-10 growth-trends reads historical scores") is the integration point for the dashboard — update the wording when the storage layer lands.

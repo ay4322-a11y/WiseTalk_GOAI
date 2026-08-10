@@ -108,8 +108,14 @@ def main(argv=None):
         reason = str(exc)
 
     safe_text = append_disclaimer(safe_text)
+    # Verdict parity with the hallucination-gate.py contract: 0 -> PASS,
+    # 1-2 -> WARN, 3+ -> BLOCK. The legacy fail-soft exit codes are unchanged
+    # (0=ok, 1=fallback) — the verdict field is additive, for callers that
+    # want the gate-style decision without the new gate script.
+    verdict = "PASS" if flagged_count == 0 else ("WARN" if flagged_count < 3 else "BLOCK")
     result = {
         "status": status,
+        "verdict": verdict,
         "safe_text": safe_text,
         "inventions_flagged": flagged_count,
         "flagged_values": flagged_values,

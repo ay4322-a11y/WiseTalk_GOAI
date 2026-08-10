@@ -79,10 +79,14 @@ underlying conflict.
 "confidence": 0.98
 }
 ```
-* **Exception Handling**:
-* **Low Confidence (< 0.6)**: Fallback to `{"routed_agent": "GENERAL_CHAT"}` (generic AI mode).
+* **Exception Handling (Three-Band Confidence Model)**:
+* **Borderline Confidence (0.4–0.6)**: Return `{"status": "clarify_intent"}` with the **top 2 candidate
+agents** (agent, use_case, confidence, explanation) and a disambiguation question to the user — an Expert
+Agent is triggered once the user picks, instead of falling silently to `GENERAL_CHAT`.
+* **Low Confidence (< 0.4)**: Fallback to `{"routed_agent": "GENERAL_CHAT"}` (generic AI mode).
 * **Generic Input**: If user says "Help me write an email", maps to `"use_case":
-"General_Communication"` and routes to **Agent 2 (SCRTV)** as a safe default.
+"General_Communication"` and routes to **Agent 2 (SCRTV)** as a disclosed weak default (`status` =
+`weak_guess`).
 ####
 Skill-2: Cross-Agent Context Memory Inheritance
 * **Trigger**: Immediately after Skill-1 successfully routes the user to an Expert Agent.
@@ -109,15 +113,22 @@ Skill-3: Exclusive Structured Mandatory Fill-in Guidance (The Core Differentiato
 "Interest":"", "Difference":"", "Effect":""} }`
 * **Core Processing Logic (System Prompt)**:
 > You are a strict RIDE Negotiation Expert for a `[{{use_case}}]` scenario.
-> Check if the required `Risk`, `Interest`, `Difference`, and `Effect` fields are non-empty.
-> If any are missing, return `{"action":"force_fill", "missing_fields":["Interest"], "question":"In this salary
-negotiation context, what specific value do you provide to the company?"}`.
-> Only return `{"action":"ready_to_generate"}` when all elements are non-empty.
+> Check if the required `Risk`, `Interest`, `Difference`, and `Effect` fields are non-empty and specific.
+> If all are present and specific, return `{"action":"ready_to_generate"}` immediately — the input is
+sufficient, no questions needed.
+> If any are missing or vague, return `{"action":"force_fill_batch", "missing_fields":[{"field":"Risk",
+"question":"In this salary negotiation context, what happens if the proposal is not adopted?"},
+{"field":"Interest","question":"In this salary negotiation context, what specific value do you provide
+to the company?"}], "filled_fields":["Difference","Effect"], "message":"I need a bit more detail to
+generate a sharp version. Please answer the questions above — you can respond to all of them at once."}` —
+ALL missing fields are asked in one batch, answerable in a single reply.
 * **Expected Output Schema**:
-* *(Missing Data)*: `{ "action": "force_fill", "missing_fields": ["Interest"], "question": "What specific
-benefits will the other party gain by accepting your proposal?" }`
-* *(Complete)*: `{ "action": "ready_to_generate", "message": "Validation passed" }`
-* **Exception Handling**: If the user skips the question 3 times, the AI allows a `[AI Placeholder]` to pass
+* *(Insufficient Data)*: `{ "action": "force_fill_batch", "missing_fields": [{"field": "Interest", "question":
+"What specific benefits will the other party gain by accepting your proposal?"}], "filled_fields": ["Risk",
+"Effect"], "message": "..." }`
+* *(Complete)*: `{ "action": "ready_to_generate", "message": "Validation passed — input is sufficient, no
+additional questions needed" }`
+* **Exception Handling**: If the user refuses the batch 3 times, the AI allows a `[AI Placeholder]` to pass
 the validation.
 ####
 Skill-7: Exclusive Language Polishing & Final Generation
@@ -255,19 +266,27 @@ injections.
 injection." }`
 * **Exception Handling**: If blocked, returns HTTP 403 immediately with a rejection message.
 ####
-Skill-12: AI Hallucination Self-Check & Mandatory Disclaimer Appender
-* **Trigger**: Called on **every** output response from the 8 Expert Agents (Skill-7), right before sending
-the JSON back to the Frontend.
+Skill-12: AI Hallucination Validation Gate & Mandatory Disclaimer Appender
+* **Trigger**: Called at **three points** per request — (1) the **input gate** on the fill-in card data
+before Skill-7 generates; (2) the **output gate** inside Skill-7 on every generated draft before it reaches
+the user; (3) the **delivery wrap** on the accepted final text before persistence. No generated text is
+ever shown to the user before the gate runs.
 * **Input Schema**: `{ "generated_final_text": "...", "original_filled_data": {"Risk": "High costs" } }`
-* **Core Logic (Code/Regex Check)**:
-1. **Hallucination Check**: Compares final text to original filled data. If the AI invents data that the user
-left blank, it wraps the invented phrase in frontend markup: `[AI Inferred: Please verify]`.
+* **Core Logic (Code/Regex + heuristic Check)**:
+1. **Hallucination Gate**: Compares generated text to original filled data across two layers — a numeric
+regex layer (percentages, currency, dates, years, large numbers) and a heuristic layer (fabricated
+citations, research claims, person attributions, organization claims, quoted speech). Returns a
+**PASS / WARN / BLOCK** verdict: PASS delivers clean; WARN wraps invented values in frontend markup
+`[AI Inferred: Please verify]` with a gap note; **BLOCK refuses delivery** and returns a
+`regeneration_instruction` that Skill-7 feeds back into generation (max 2 retries; on exhaustion the
+BLOCK is downgraded to WARN with a gap note).
 2. **Mandatory Disclaimer Appender**: Append `\n\n---\n*Disclaimer: This AI-generated communication
 is for reference only and does not replace independent human judgment. Use responsibly.*` via string
-concatenation.
-* **Expected Output**: `{ "safe_final_text": "(Original text + \n\n---\n*Disclaimer...*)" }`
-* **Exception Handling**: If the regex hallucination detection causes a code error, it returns the text
-unmodified (fail-soft) to prevent service downtime.
+concatenation — never optional, appended exactly once (idempotent).
+* **Expected Output**: `{ "verdict": "PASS" | "WARN" | "BLOCK", "safe_final_text": "(Original text + \n\n---\n*Disclaimer...*)", "regeneration_instruction": "..." | null }`
+* **Exception Handling**: Fail-soft on internal errors only — a script crash falls back to WARN with a
+gap note and never loses the text. Fail-**closed** on detected inventions: a BLOCK verdict is never
+delivered; it always triggers regeneration or a marked WARN after retries are exhausted.
 ---
 
 ===== PAGE 6 =====
@@ -278,16 +297,26 @@ User inputs text -> **Skill-11** intercepts. *Exception: If blocked, 403 Error r
 Safe text enters **Skill-1** + **Skill-2**. The Router maps `use_case` (e.g., "Salary_Negotiation") and routes
 specifically to the `Agent 6 (RIDE)`.
 **Stage 2: Mandatory Structural Guidance (Non-Chat UI)**
-Frontend UI transforms from chatbox into specific fill-in cards (e.g., 4 cards for RIDE). -> **Skill-3** forces
-the user to complete fields. *Exception: If skipped 3 times, AI accepts a placeholder.*
-**Stage 3: Draft Generation & Critical Feedback (Coaching Loops)**
-Once fields are filled, **Skill-7** generates the draft -> Immediately followed by **Skill-13** outputting 3
-critique points. *Exception: If loop reaches iteration 3, force-break and present best draft.*
+Frontend UI transforms from chatbox into specific fill-in cards (e.g., 4 cards for RIDE). -> **Skill-3** runs
+an upfront sufficiency gate: if the input already covers all fields with specific detail, generation proceeds
+immediately; otherwise it asks for ALL missing fields at once in a single batch. *Exception: If refused
+3 times, AI accepts a placeholder.*
+**Stage 3a: Input Validation (Hallucination Input Gate)**
+Once fields are filled, **Skill-12** (input gate) validates the fill-in card data before generation —
+placeholders and fabricated claims are caught here, so the user is asked for real values before any
+draft exists. *Exception: If BLOCK, generation refuses until the flagged values are replaced.*
+**Stage 3b: Draft Generation with Hallucination Gate (Coaching Loops)**
+**Skill-7** generates the draft -> **Skill-12** (output gate) validates it **before the user sees it**:
+PASS proceeds to critique; WARN marks invented values `[AI Inferred: Please verify]`; **BLOCK triggers
+automatic regeneration** with anti-fabrication constraints (max 2 retries, then WARN with a gap note). ->
+Only then does **Skill-13** output 3 critique points. *Exception: If loop reaches iteration 3, force-break
+and present best draft.*
 **Stage 4: Optional Advanced Branch (Sandbox Battle)**
 User accepts draft -> Optionally clicks "Enter Battle Arena" to trigger **Skill-8** (Role-play interrogation) -
 > End of battle triggers **Skill-9** (Visual Radar Score Chart).
-**Stage 5: Output Compliance & Hallucination Check**
-Before data returns to UI, **Skill-12** audits for hallucinated data and appends the mandatory disclaimer.
+**Stage 5: Final Compliance Wrap**
+Before data returns to UI, **Skill-12** (delivery wrap) re-runs the gate once for a final marker sweep and
+appends the mandatory disclaimer — this is the last line of defense, not the first.
 **Stage 6: Persistence & Data Archiving**
 Backend writes cards, final text, and Skill-9 scores to SQLite -> Updates **Skill-10** (User Dashboard
 Growth Curve).
@@ -360,7 +389,7 @@ snippets in Dify) by the Expert Agents when specific criteria are met.
 * **Skill-9**: Multi-Dimensional Quantitative Scoring
 * **Skill-10**: Long-Term Trend Analysis
 * **Skill-11**: Sensitive Keyword Interceptor (Global Edge)
-* **Skill-12**: Hallucination Self-Check & Disclaimer (Global Edge)
+* **Skill-12**: Hallucination Validation Gate & Disclaimer (Global Edge)
 ---
 ## Part 3: Detailed AI Atomic Skills Specifications (For Developers)
 ###
@@ -382,7 +411,10 @@ Skill-1: Intent Recognition & Use Case Mapping
 "confidence": 0.98
 }
 ```
-* **Exception**: If confidence < 0.6, fallback to `GENERAL_CHAT`.
+* **Exception**: Three-band confidence model — ≥ 0.6 routes to the expert; borderline (0.4–0.6, workplace
+signal) returns `clarify_intent` with the top 2 candidate agents and a disambiguation question; < 0.4 or
+non-workplace falls back to `GENERAL_CHAT`. Generic input defaults to Agent 2 (SCRTV) as a disclosed
+`weak_guess`.
 ####
 Skill-2: Context Memory Inheritance
 * **Trigger**: Immediately after Skill-1, right before passing control to an Expert Agent.
@@ -401,12 +433,15 @@ Skill-3: Mandatory Fill-in Guidance
 * **Trigger**: When the user enters an Expert Agent, or when they hit "Generate" while fields are empty.
 * **Input Schema**: `{ "agent_model": "RIDE", "filled_data": {"Risk":"", "Interest":"", "Difference":"",
 "Effect":""} }`
-* **Core Logic**: An LLM prompt that strictly checks for non-empty values in specific fields. If missing, it
-does **not** generate the final text, but returns a `force_fill` instruction.
-* **Output Schema (Missing)**: `{ "action": "force_fill", "missing_fields": ["Interest"], "question": "Please
-specify the direct benefits." }`
-* **Output Schema (Complete)**: `{ "action": "ready_to_generate" }`
-* **Exception**: If the user skips the filling prompt 3 times, the system accepts `[AI Placeholder]` to
+* **Core Logic**: An LLM prompt that runs an upfront sufficiency gate — if all fields are non-empty and
+specific, it returns `ready_to_generate` immediately. If any are missing or vague, it returns a
+`force_fill_batch` instruction listing ALL incomplete fields at once (each with its guiding question),
+answerable in a single user reply.
+* **Output Schema (Missing)**: `{ "action": "force_fill_batch", "missing_fields": [{"field": "Interest",
+"question": "Please specify the direct benefits."}], "filled_fields": [...], "message": "..." }`
+* **Output Schema (Complete)**: `{ "action": "ready_to_generate", "message": "Validation passed — input is
+sufficient, no additional questions needed" }`
+* **Exception**: If the user refuses the batch 3 times, the system accepts `[AI Placeholder]` to
 continue.
 ####
 Skill-7: Language Polishing & Final Generation
@@ -482,15 +517,20 @@ previous`).
 * **Output Schema**: `{ "is_blocked": true, "block_reason": "..." }` (Returns an immediate HTTP 403 if
 blocked).
 ####
-Skill-12: Hallucination Checker & Disclaimer Appender
+Skill-12: Hallucination Validation Gate & Disclaimer Appender
 
 ===== PAGE 11 =====
-* **Trigger**: Runs on the final output text generated by the Agents, right before returning to the UI.
-* **Logic (Pure Code, no LLM)**:
-1. Parses the output and original filled data. If the LLM fabricated data that was left blank, it wraps that
-text in a frontend red-flag tag: `[AI Inferred: Please verify]`.
-2. Appends the standard legal disclaimer by string concatenation: `\n\n---\n*Disclaimer: ...*`.
-* **Output Schema**: `{ "safe_final_text": "(Final text + disclaimer)" }`
+* **Trigger**: Runs at three points — on the fill-in card data before generation (input gate), on every
+draft inside Skill-7 **before it reaches the user** (output gate), and on the accepted final text before
+delivery (delivery wrap).
+* **Logic (Pure Code, no LLM; heuristic + regex layers)**:
+1. Compares the generated text to the original filled data. Returns a **PASS / WARN / BLOCK** verdict.
+PASS delivers; WARN wraps invented phrases in a frontend red-flag tag `[AI Inferred: Please verify]`;
+BLOCK refuses delivery and returns a `regeneration_instruction` that forces a regenerate (max 2
+retries, then WARN with a gap note).
+2. Appends the standard legal disclaimer by string concatenation: `\n\n---\n*Disclaimer: ...*` — always,
+exactly once.
+* **Output Schema**: `{ "verdict": "PASS" | "WARN" | "BLOCK", "safe_final_text": "(Final text + disclaimer)", "regeneration_instruction": "..." | null }`
 ---
 ###
 Implementation Note for Developers

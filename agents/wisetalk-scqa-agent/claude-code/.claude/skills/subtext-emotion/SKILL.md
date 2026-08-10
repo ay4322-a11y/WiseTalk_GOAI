@@ -72,3 +72,11 @@ Solution: ask once; if they can't say, use the agent's use case default and stat
 
 ## Fallback
 If the analysis prompt fails twice to produce parseable JSON: deliver the read as prose with a visible note — never fabricate a sentiment map. If the text is empty or not the counterparty's words: stop and ask for the exact text.
+
+## Customization points
+
+- **Analysis prompt:** Step 2's prompt is the WiseTalk PDF's system prompt. Swap the phrasing while keeping the JSON contract (`emotion_score` 0.0–1.0, `hidden_concern`, `suggestion`) if a different output shape is needed downstream.
+- **Sarcasm/PA detection:** currently delegated to LLM judgment ("detect sarcasm first"). To make it stricter, add explicit marker lists (ALL-CAPS, repeated punctuation, "sure, ANOTHER…" patterns) to Step 2.
+- **Emotion vocabulary:** score keys are free-form (e.g. hesitation, interest). Pin a fixed taxonomy (e.g. 6 core emotions) if a dashboard needs stable keys.
+- **Identity default:** Step 1 falls back to the agent's use case (e.g. `Salary_Negotiation` → the counterparty). Replace the default resolution rule to change it.
+- **JSON failure policy:** the skill re-emits once, then degrades to prose. Tighten (no re-emit) or loosen (never prose) per integration policy.

@@ -5,7 +5,7 @@ WiseTalk is an AI-native workplace communication coaching system built on a **"1
 - **1 Router Agent** — entry gatekeeper (intent recognition, context memory)
 - **8 Expert Agents** — one per communication model (STAR, SCRTV, MECE, PREP, SCQA, RIDE, FFC, Funnel)
 - **X Shared Tools** — logic detection, emotional analysis, battle simulation, growth tracking
-- **Two-Front Security Gateway** — pre-interceptor (injection filter) + post-validator (hallucination check)
+- **Two-Front Security Gateway** — pre-interceptor (injection filter) + pre-output validation gate (hallucination check: PASS / WARN / BLOCK verdicts)
 
 The system is built from the **WiseTalk Master Spec v2.0** ([`_wisetalk_extracted.md`](_wisetalk_extracted.md)) using the 15-element agent pipeline.
 
@@ -30,6 +30,24 @@ Each of the 8 experts is an **individual, standalone agent** with its model hard
 
 **Agent 8 note:** the Funnel Refiner is a "reverser" — it compresses long text (Skill-5) and does not run the coaching loop (no Skill-7/Skill-13). Its stop condition is mechanical (compressed to <20% of the original), not judgment-based.
 
+## Getting started — trigger from the project root
+
+Open the **project root** in Claude Code — no need to navigate into an agent's `claude-code/` folder. The root [`CLAUDE.md`](CLAUDE.md) registers the entry gatekeeper (`wisetalk-router-agent`) and all 8 Expert Agents (`.claude/agents/`), so any workplace communication query routes automatically:
+
+1. Type your scenario from anywhere in the repo, e.g. *"I need to negotiate a salary increase"* or *"compress this vendor email into action items."*
+2. The router classifies the need against the routing map and dispatches to the best-fit Expert Agent.
+3. The expert runs its pipeline — mandatory fill-in cards → Skill-12 input gate → Skill-7 draft gated by Skill-12 (BLOCK regenerates, max 2 retries) → iterative critique → delivery with the mandatory disclaimer.
+
+Non-workplace queries (general questions, code, chit-chat) are left to the main conversation — WiseTalk is not triggered.
+
+**Keeping the shared skills in sync:** `skills-library/` is the canonical source; each agent carries byte-identical copies under its `claude-code/.claude/skills/`. After editing a library skill, propagate it:
+
+```
+python skills-library/sync.py --skill hallucination-check   # sync one skill
+python skills-library/sync.py --all                          # sync every skill
+python skills-library/sync.py --verify                       # check for drift (exit 1 on drift)
+```
+
 ## File map
 
 | File | Role |
@@ -42,7 +60,7 @@ Each of the 8 experts is an **individual, standalone agent** with its model hard
 | [templates/01-agent-spec-template.md](templates/01-agent-spec-template.md) | **The core** — 15-element specification template with tier tags, options & trade-offs |
 | [templates/03-claude-code-mapping.md](templates/03-claude-code-mapping.md) | **The generator** — maps each element to Claude Code files, with copy-paste skeletons |
 | [templates/04-validation-checklist.md](templates/04-validation-checklist.md) | **The gate** — per-element Definition-of-Done rubric with pass thresholds |
-| [skills-library/](skills-library/README.md) | **The WiseTalk shared tools** — 8 reusable skills (Skills 4–12): MECE check, subtext/emotion decode, battle simulator, battle scoring, growth trends, injection filter, hallucination check, funnel compression |
+| [skills-library/](skills-library/README.md) | **The WiseTalk shared tools** — 8 reusable skills (Skills 4–12): MECE check, subtext/emotion decode, battle simulator, battle scoring, growth trends, injection filter, hallucination check, funnel compression. Canonical source — copies propagate to agents via `skills-library/sync.py` (manifest: `skills-library/sync-manifest.json`) |
 
 ## The shared tools (Skills 4–12)
 
@@ -57,6 +75,6 @@ The 8 skills in the library are the system's shared capability layer. Each is a 
 | [battle-scoring](skills-library/battle-scoring/SKILL.md) | Skill-9 | Score completed battle transcripts |
 | [growth-trends](skills-library/growth-trends/SKILL.md) | Skill-10 | Aggregate battle-score history into trends |
 | [injection-filter](skills-library/injection-filter/SKILL.md) | Skill-11 | Prompt-injection & sensitive-keyword pre-interceptor |
-| [hallucination-check](skills-library/hallucination-check/SKILL.md) | Skill-12 | Post-validator for invented numeric claims + disclaimer |
+| [hallucination-check](skills-library/hallucination-check/SKILL.md) | Skill-12 | Pre-output validation gate — regex + heuristic detection, PASS/WARN/BLOCK verdict, BLOCK forces regeneration, mandatory disclaimer appender |
 
 *(Note: the two Loop Engineering source infographics, the original PDF, and the development methodology docs were removed in the Pure WiseTalk cleanup — the models' behavioral baseline and spec lineage links in `templates/` and `reference/` are retained because every agent's intake form, spec, and CLAUDE.md reference them.)*

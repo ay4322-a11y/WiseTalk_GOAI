@@ -1,0 +1,33 @@
+{
+  "hallucination-check": {
+    "description": "Skill-12 pre-output validation gate + disclaimer appender",
+    "targets": [
+      "agents/wisetalk-star-agent/claude-code/.claude/skills/hallucination-check",
+      "agents/wisetalk-scrtv-agent/claude-code/.claude/skills/hallucination-check",
+      "agents/wisetalk-mece-agent/claude-code/.claude/skills/hallucination-check",
+      "agents/wisetalk-prep-agent/claude-code/.claude/skills/hallucination-check",
+      "agents/wisetalk-scqa-agent/claude-code/.claude/skills/hallucination-check",
+      "agents/wisetalk-ride-agent/claude-code/.claude/skills/hallucination-check",
+      "agents/wisetalk-ffc-agent/claude-code/.claude/skills/hallucination-check",
+      "agents/wisetalk-funnel-agent/claude-code/.claude/skills/hallucination-check"
+    ]
+  },
+  "language-polishing": {
+    "description": "Skill-7 generation with built-in hallucination gate",
+    "targets": [
+      "agents/wisetalk-star-agent/claude-code/.claude/skills/language-polishing",
+      "agents/wisetalk-scrtv-agent/claude-code/.claude/skills/language-polishing",
+      "agents/wisetalk-mece-agent/claude-code/.claude/skills/language-polishing",
+      "agents/wisetalk-prep-agent/claude-code/.claude/skills/language-polishing",
+      "agents/wisetalk-scqa-agent/claude-code/.claude/skills/language-polishing",
+      "agents/wisetalk-ride-agent/claude-code/.claude/skills/language-polishing",
+      "agents/wisetalk-ffc-agent/claude-code/.claude/skills/language-polishing"
+    ]
+  },
+  "funnel-compression": {
+    "description": "Skill-5 compression with built-in hallucination gate",
+    "targets": [
+      "agents/wisetalk-funnel-agent/claude-code/.claude/skills/funnel-compression"
+    ]
+  }
+}
