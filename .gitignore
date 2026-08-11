@@ -13,3 +13,8 @@ _build/
 
 # Demo audit logs — regenerated on every run; captured evidence lives in RUN_EVIDENCE.md
 runs/
+
+# Competition submission working material — internal, never published.
+# The deck and the video are produced from these, but the repo link is what
+# judges read, so the pitch notes do not belong in it. Kept locally only.
+docs/submission/
