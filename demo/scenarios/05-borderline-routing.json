@@ -1,0 +1,11 @@
+{
+  "id": "05-borderline-routing",
+  "title": "Borderline confidence — the router asks instead of guessing",
+  "user_message": "I need to escalate a conflict about the budget with another team.",
+  "cards": {},
+  "recorded_draft": "",
+  "expect": {
+    "stage0": "SAFE",
+    "final_verdict": "CLARIFY"
+  }
+}

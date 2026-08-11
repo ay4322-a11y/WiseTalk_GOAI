@@ -1,0 +1,18 @@
+{
+  "id": "04-incomplete-cards",
+  "title": "Scaffolding — generation refused while mandatory cards are empty",
+  "user_message": "I need to write a budget request for more tooling spend next quarter.",
+  "cards": {
+    "Scene": "The data team runs its nightly pipeline on a single self-managed scheduler that I maintain alongside my normal work.",
+    "Conflict": "The scheduler failed three times last quarter and each failure cost a full day of analyst time while I restored it by hand.",
+    "Reason": "",
+    "Tactics": "",
+    "Value": "Analysts stop losing days to pipeline recovery and I stop being the single point of failure for the nightly run."
+  },
+  "recorded_draft": "",
+  "expect": {
+    "stage0": "SAFE",
+    "routed_agent": "Agent 2 (SCRTV)",
+    "final_verdict": "FORCE_FILL"
+  }
+}

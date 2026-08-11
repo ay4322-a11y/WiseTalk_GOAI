@@ -9,3 +9,7 @@ _build/
 *.pdf
 *.docx
 *.png
+*.pptx
+
+# Demo audit logs — regenerated on every run; captured evidence lives in RUN_EVIDENCE.md
+runs/

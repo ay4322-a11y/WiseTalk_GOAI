@@ -1,6 +1,8 @@
 # Eval Cases — wisetalk-scqa-agent (SCQA Analyst)
 
-Hill-climbing eval set for the SCQA Analyst — Agent 5 of the 8 WiseTalk Expert Communication Agents. Each spec change re-runs this set; the score must not drop below the baseline (26/26, latest run 2026-08-09).
+Hill-climbing eval set for the SCQA Analyst — Agent of the 8 WiseTalk Expert Communication Agents. Each spec change re-runs this set; a case flipping PASS -> FAIL goes back to the owning element.
+
+> **Scoring status (audited 2026-08-11): 14 cases specified, 0 scored.** Every checkbox below is still unticked — these cases describe the acceptance criteria but have not been run and scored in a Claude Code session. An earlier header claimed a `26/26` baseline; no run produced it and the number did not match the case count, so it has been removed rather than carried forward. Deterministic script behaviour referenced by these cases (Skill-11 and Skill-12 verdicts and exit codes) IS covered by the automated suite at `tests/test_skills.py` — see `RUN_EVIDENCE.md`.
 
 ## Case 1 — Problem_Solving: centralised ticketing system (mandatory scenario)
 
@@ -162,3 +164,27 @@ Hill-climbing eval set for the SCQA Analyst — Agent 5 of the 8 WiseTalk Expert
 | 14 | ✅ 1 |
 
 **Score: 26/26 (cases 1–8) + 3/3 (cases 9–10, run-1 2026-08-09 E2E: Skill-6 subtext, Battle Arena, hallucination-check + fail-soft)** — hill-climbing baseline for the SCQA agent. Regression rule: no drop below 26/26 after any spec change. All new gate cases ✅ on run-2 (2026-08-10) — script-contract E2E.
+
+---
+
+## Score sheet
+
+Score **1** = acceptance criterion met, **0** = not met. Fill a new column per run; never edit a past column.
+
+| # | Case | run-1 |
+|---|------|:-----:|
+| 1 | Problem_Solving: centralised ticketing system (mandatory scenario) | — |
+| 2 | Crisis_Management: urgent incident briefing (mandatory scenario) | — |
+| 3 | Urgent_Incident: partial cards (mandatory scenario) | — |
+| 4 | Revision request: calm the tone (success criterion) | — |
+| 5 | Delivery integrity (success criterion) | — |
+| 6 | Out-of-model referral (model-boundary) | — |
+| 7 | Seeded defect (Element 13 adversarial seed) | — |
+| 8 | Skill-6 subtext-emotion: pasted counterparty words (new skill case) | — |
+| 9 | Battle Arena on the delivered draft (Battle Arena wiring) | — |
+| 10 | Hallucination check on the accepted draft (hallucination-check wiring) | — |
+| 11 | Input gate on the fill-in cards (pre-output position) | — |
+| 12 | Output gate BLOCK → regeneration (validity gating) | — |
+| 13 | Retry exhaustion → WARN delivery (retry cap) | — |
+| 14 | Gate PASS (clean draft) | — |
+| | **Total** | **0 / 14 scored** |

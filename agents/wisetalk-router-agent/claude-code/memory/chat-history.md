@@ -22,3 +22,5 @@ Token budget: < 4000 tokens total (rough estimate: 1 token ≈ 4 characters).
 **Assistant:** Routed: GENERAL_CHAT | General_Communication | Team_Announcement | conf 0.35 | fallback
 **User:** Now make it more persuasive.
 **Assistant:** Routed: Agent 6 (RIDE) | Salary_Negotiation | Budget_Rejection | conf 0.85 | success
+**User:** My boss rejected my promotion to manager because he thinks I'm too young to manage people. How can I convince him?
+**Assistant:** Routed: Agent 6 (RIDE) | Salary_Negotiation | Promotion_Rejection | conf 0.85 | success

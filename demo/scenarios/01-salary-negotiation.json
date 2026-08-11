@@ -1,0 +1,18 @@
+{
+  "id": "01-salary-negotiation",
+  "title": "Happy path — RIDE negotiation, clean draft delivered",
+  "user_message": "I need to negotiate a salary increase with my manager next week.",
+  "cards": {
+    "Risk": "If compensation stays flat another cycle I will start taking recruiter calls, and the handover of the billing service I own would take at least two quarters.",
+    "Interest": "My manager needs the billing service to stay stable through the migration and wants to avoid backfilling a senior engineer mid-project.",
+    "Difference": "My current band is 12% below the internal median for the level I have been operating at since I took over the billing service.",
+    "Effect": "Closing that 12% gap keeps ownership of the migration continuous and removes the retention risk before the planning cycle starts."
+  },
+  "recorded_draft": "Thank you for making time. I want to talk about my compensation ahead of the planning cycle.\n\nSince I took over the billing service I have been operating at a level where my current band sits 12% below the internal median. I am raising it now rather than later because the migration depends on continuous ownership, and a handover would take at least two quarters.\n\nI know your priority is keeping the billing service stable through the migration without backfilling a senior engineer mid-project. Closing the 12% gap serves exactly that — it removes the retention risk before planning starts and keeps the migration with the person who has been running it.\n\nCan we agree on adjusting my band to the internal median effective this cycle?",
+  "expect": {
+    "stage0": "SAFE",
+    "routed_agent": "Agent 6 (RIDE)",
+    "stage3a": "PASS",
+    "final_verdict": "PASS"
+  }
+}

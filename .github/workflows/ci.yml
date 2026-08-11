@@ -1,0 +1,49 @@
+name: CI
+
+# Everything here runs with no third-party dependencies — there is no install step
+# because WiseTalk's executable layer is Python standard library only.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Skill + pipeline tests
+        run: python -m unittest discover tests -v
+
+      - name: Skills-library drift gate
+        # The library is canonical; each agent carries a byte-identical copy.
+        # A drifted copy means an agent is running a stale skill — fail the build.
+        run: python skills-library/sync.py --verify
+
+      - name: End-to-end pipeline demo
+        # Exits non-zero if any scenario deviates from its declared expectations.
+        run: python demo.py
+        env:
+          NO_COLOR: "1"
+
+      - name: Browser demo boots and serves
+        run: |
+          python demo_server.py --port 8000 --no-browser &
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null http://127.0.0.1:8000/ && break
+            sleep 0.5
+          done
+          curl -sf -o /dev/null http://127.0.0.1:8000/
+          curl -sf http://127.0.0.1:8000/api/models | python -c "import json,sys; assert len(json.load(sys.stdin)['models']) == 8"
