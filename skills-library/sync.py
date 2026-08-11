@@ -74,8 +74,25 @@ def resolve_targets(skill):
     return sorted(targets)
 
 
+def _normalized(path):
+    """File bytes with line endings normalized to LF.
+
+    Skill files are all text (.md, .py, .txt, .json). On Windows a checkout with
+    core.autocrlf=true, or simply saving a library file in an editor, can leave the
+    library copy CRLF while an agent copy stays LF — identical content, different
+    bytes. Comparing raw bytes reported that as drift and failed a gate that is
+    supposed to mean "an agent is running a stale skill". Normalizing first keeps
+    every real content difference detectable while ignoring the checkout artifact.
+    """
+    with open(path, "rb") as fh:
+        return fh.read().replace(b"\r\n", b"\n")
+
+
 def files_differ(src_dir, dst_dir):
-    """True if any file under src_dir differs from its dst_dir counterpart, or is missing."""
+    """True if any file under src_dir differs from its dst_dir counterpart, or is missing.
+
+    Comparison is line-ending-insensitive; see _normalized().
+    """
     for dirpath, _dirnames, filenames in os.walk(src_dir):
         rel = os.path.relpath(dirpath, src_dir)
         dst_sub = dst_dir if rel == "." else os.path.join(dst_dir, rel)
@@ -84,9 +101,8 @@ def files_differ(src_dir, dst_dir):
             dst_file = os.path.join(dst_sub, name)
             if not os.path.isfile(dst_file):
                 return True
-            with open(src_file, "rb") as a, open(dst_file, "rb") as b:
-                if a.read() != b.read():
-                    return True
+            if _normalized(src_file) != _normalized(dst_file):
+                return True
     return False
 
 
