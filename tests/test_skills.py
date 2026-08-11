@@ -294,5 +294,88 @@ class DemoScenarios(unittest.TestCase):
                 self.assertTrue(scenario.get("user_message"))
 
 
+class StructuralComposition(unittest.TestCase):
+    """Stage 3b's no-key, freeform path. It must add the model's structure rather
+    than hand the user's own words straight back — the previous behaviour."""
+
+    def setUp(self):
+        self.models = demo.parse_catalog()
+
+    def test_every_catalog_card_has_a_leadin(self):
+        for _key, info in self.models.items():
+            for field, _question in info["fields"]:
+                with self.subTest(model=info["model"], field=field):
+                    self.assertIn(field, demo.CARD_LEADINS)
+
+    def test_composition_orders_cards_and_is_not_a_bare_echo(self):
+        _key, ride = demo.find_model(self.models, "Agent 6 (RIDE)")
+        cards = {"Risk": "AAA", "Interest": "BBB", "Difference": "CCC", "Effect": "DDD"}
+        text = demo.compose_structural(ride, cards)
+        # every value survives, in the model's declared card order
+        positions = [text.index(v) for v in ("AAA", "BBB", "CCC", "DDD")]
+        self.assertEqual(positions, sorted(positions))
+        # and it is more than the values glued together
+        self.assertNotEqual(text, "\n\n".join(cards.values()))
+        for field in cards:
+            self.assertIn(demo.CARD_LEADINS[field], text)
+
+    def test_composition_skips_empty_cards(self):
+        _key, ffc = demo.find_model(self.models, "Agent 7 (FFC)")
+        text = demo.compose_structural(ffc, {"Feeling": "glad", "Fact": "", "Compare": ""})
+        self.assertIn("glad", text)
+        self.assertNotIn(demo.CARD_LEADINS["Compare"], text)
+
+
+class RecordedCoachingContracts(unittest.TestCase):
+    """Skill-13, Skill-8 and Skill-9 are prose-only, so the demo replays recordings.
+    The recordings are only evidence if they are held to the published contracts."""
+
+    def test_critique_contract_is_exactly_three_points(self):
+        self.assertEqual(demo.validate_critique(["a", "b", "c"]), [])
+        self.assertTrue(demo.validate_critique(["a", "b"]))
+        self.assertTrue(demo.validate_critique(["a", "b", "c", "d"]))
+        self.assertTrue(demo.validate_critique(["a", "b", "  "]))
+
+    def test_battle_contract_is_four_scores_and_two_tips(self):
+        good = {"logic": 80, "eq": 70, "response_speed": 90, "persuasion": 60,
+                "advice": ["one", "two"]}
+        self.assertEqual(demo.validate_battle(good), [])
+        self.assertTrue(demo.validate_battle({**good, "logic": 101}))
+        self.assertTrue(demo.validate_battle({**good, "eq": "high"}))
+        self.assertTrue(demo.validate_battle({**good, "advice": ["only one"]}))
+        self.assertTrue(demo.validate_battle({k: v for k, v in good.items() if k != "persuasion"}))
+
+    def test_shipped_recordings_satisfy_their_contracts(self):
+        found = 0
+        for scenario in demo.load_scenarios(None):
+            with self.subTest(scenario=scenario["id"]):
+                if scenario.get("recorded_critique"):
+                    found += 1
+                    self.assertEqual(demo.validate_critique(scenario["recorded_critique"]), [])
+                if scenario.get("recorded_battle"):
+                    self.assertEqual(demo.validate_battle(scenario["recorded_battle"]), [])
+        self.assertGreater(found, 0, "no scenario exercises the critique stage")
+
+
+class GrowthCurveLeavesTheRepoClean(unittest.TestCase):
+    """The tracked battle-scores seed is evidence from a real E2E run. A demo run
+    reads it and must never write to it, or `git status` dirties on every run."""
+
+    def test_session_battles_do_not_touch_the_tracked_seed(self):
+        before = demo.BATTLE_SCORES.read_bytes() if demo.BATTLE_SCORES.exists() else None
+        demo.SESSION_BATTLES.unlink(missing_ok=True)
+        demo.record_battle({"logic": 50, "eq": 50, "response_speed": 50, "persuasion": 50,
+                            "advice": ["a", "b"]}, "unit-test")
+        merged = demo.growth_input_path()
+        try:
+            after = demo.BATTLE_SCORES.read_bytes() if demo.BATTLE_SCORES.exists() else None
+            self.assertEqual(before, after, "the tracked seed was modified by a demo run")
+            self.assertIsNotNone(merged)
+            self.assertTrue(str(merged).replace("\\", "/").endswith("runs/growth/growth-input.jsonl"),
+                            "the merged file must live in the gitignored runs/ directory")
+        finally:
+            demo.SESSION_BATTLES.unlink(missing_ok=True)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

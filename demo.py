@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """WiseTalk end-to-end pipeline demo — runnable without Claude Code.
 
-Walks the Master Spec pipeline (`_wisetalk_extracted.md` §5, Stages 0-4) using the
+Walks the Master Spec pipeline (`_wisetalk_extracted.md` §5, Stages 0-6) using the
 same deterministic skill scripts the Expert Agents call, so a reviewer can clone the
 repo and watch the whole loop with no install step:
 
@@ -17,16 +17,27 @@ Stages, and what actually executes at each:
     Stage 2  Skill-3   mandatory fill-in cards from reference/wisetalk-model-catalog.md
     Stage 3a Skill-12  hallucination-gate.py --mode input            (card data)
     Stage 3b Skill-7   generation, then Skill-12 --mode gate; BLOCK regenerates (max 2)
-    Stage 4  Skill-10  growth-trends/scripts/aggregate-scores.py     (battle-score history)
+    Stage 3c Skill-13  iterative critique — exactly 3 points, replayed from the scenario
+    Stage 4  Skill-8/9 sandbox battle & scoring — replayed from the scenario
+    Stage 6  Skill-10  growth-trends/scripts/aggregate-scores.py     (battle-score history)
 
 Honesty boundaries — these matter, the whole point of the gates is not lying:
-  * Stages 0, 3a, 3b's gate, and 4 are the REAL production scripts, not reimplementations.
+  * Stages 0, 3a, 3b's gate, and 6 are the REAL production scripts, not reimplementations.
+  * Stages 3c and 4 are REPLAYED recordings. Skill-13, Skill-8 and Skill-9 are
+    prose-only skills with no scripts, so they cannot run deterministically with
+    no API key. Every line of their output is labelled `recorded`, and the
+    recordings are validated against the skills' published contracts (exactly 3
+    critique points; 4 integer scores 0-100 plus exactly 2 tips) so a drifted
+    fixture fails the run rather than passing quietly.
   * Stage 1 here is a deterministic keyword router standing in for Skill-1's LLM
     classifier. It reads the same routing map and applies the same three-band
     confidence rule, but it is a stand-in and is labelled as one in the output.
   * Stage 3b's generation is a recorded draft by default (labelled `recorded`). With
-    --api it calls the Claude API for real (labelled `live`). The gate that judges the
-    draft is the real script either way.
+    --api it calls the Claude API for real (labelled `live`). If a scenario carries no
+    recording, compose_structural orders the user's own cards through the model's
+    rhetorical sequence (labelled `composed`) — a structuring step, not a generator,
+    and never presented as model output. The gate that judges the draft is the real
+    script in all three cases.
 
 Every stage appends a record to runs/<timestamp>.jsonl — the audit trail.
 
@@ -51,6 +62,18 @@ ROUTING_MAP = ROOT / "agents" / "wisetalk-router-agent" / "claude-code" / "confi
 BATTLE_SCORES = ROOT / "agents" / "wisetalk-router-agent" / "claude-code" / "memory" / "battle-scores.jsonl"
 SCENARIO_DIR = ROOT / "demo" / "scenarios"
 RUNS_DIR = ROOT / "runs"
+
+# Battles run during a session are written here, never back into BATTLE_SCORES.
+# That file is tracked evidence from a real E2E run (see the router agent's
+# eval-cases.md note), so a demo run must leave it byte-identical and `git status`
+# clean. The growth aggregator reads the union of the two.
+#
+# These live in a subdirectory so that `runs/*.jsonl` stays exactly the audit
+# trail — one schema, one meaning. Score records and audit records side by side
+# would make the log unreadable to anything that scans it.
+GROWTH_DIR = RUNS_DIR / "growth"
+SESSION_BATTLES = GROWTH_DIR / "battle-scores-session.jsonl"
+GROWTH_INPUT = GROWTH_DIR / "growth-input.jsonl"
 
 DFA_FILTER = SKILLS / "injection-filter" / "scripts" / "dfa-filter.py"
 HALLUCINATION_GATE = SKILLS / "hallucination-check" / "scripts" / "hallucination-gate.py"
@@ -386,6 +409,138 @@ def generate_live(model_info: dict, use_case: str, cards: dict[str, str],
 
 
 # --------------------------------------------------------------------------
+# Generation stand-in (Skill-7) — deterministic, offline, and never passed off
+# as model output. Used when no API key is available and the input is freeform,
+# so there is no recorded draft to replay.
+# --------------------------------------------------------------------------
+
+# One lead-in per card name across the catalog's 8 models (28 slots, 25 distinct
+# names — `Situation`, `Reason` and `Action` are shared between models). The card
+# order in the catalog *is* the model's rhetorical order, so walking the fields in
+# order and prefixing each with its lead-in produces the model's shape.
+CARD_LEADINS = {
+    # STAR
+    "Situation": "The situation:",
+    "Task": "What I was responsible for:",
+    "Action": "What I did about it:",
+    "Result": "Where that landed:",
+    # SCRTV
+    "Scene": "Where things stand:",
+    "Conflict": "The problem blocking us:",
+    "Reason": "Why it is happening:",
+    "Tactics": "What I propose we do:",
+    "Value": "What that is worth:",
+    # MECE / Pyramid
+    "Conclusion": "My conclusion up front:",
+    "Arguments": "It rests on these arguments:",
+    "Evidence": "The evidence behind them:",
+    # PREP
+    "Point": "My point:",
+    "Example": "A concrete example:",
+    # SCQA
+    "Complication": "What has changed:",
+    "Question": "So the question is:",
+    "Answer": "My answer:",
+    # RIDE
+    "Risk": "The risk of leaving this as it is:",
+    "Interest": "What we both gain by moving:",
+    "Difference": "What sets this apart:",
+    "Effect": "The effect I am asking for:",
+    # FFC
+    "Feeling": "How this landed for me:",
+    "Fact": "Specifically, what you did:",
+    "Compare": "Set against what came before:",
+    # Funnel
+    "OriginalText": "Source text:",
+}
+
+COMPOSED_NOTE = ("Assembled from your cards in the model's own order — "
+                 "no language model was called.")
+
+
+def compose_structural(model_info: dict, cards: dict[str, str]) -> str:
+    """Order the filled cards through the model's rhetorical sequence.
+
+    A deterministic Skill-7 stand-in, not a generator: it adds structure and
+    nothing else. Every word of substance is the user's own, which is exactly why
+    it is safe to run with no key and no network — and why it is labelled
+    `composed` rather than `live` or `recorded` everywhere it surfaces.
+    """
+    parts = []
+    for field, _question in model_info["fields"]:
+        value = str(cards.get(field, "")).strip()
+        if not value:
+            continue
+        parts.append(f"{CARD_LEADINS.get(field, field + ':')} {value}")
+    return "\n\n".join(parts)
+
+
+# --------------------------------------------------------------------------
+# Recorded coaching artifacts — Skill-13 critique and Skill-8/9 battle are
+# prose-only skills with no scripts, so they cannot run deterministically
+# offline. The scenarios carry recordings, and these validate them against the
+# skills' published contracts so a drifted fixture fails the demo loudly.
+# --------------------------------------------------------------------------
+
+BATTLE_DIMENSIONS = ["logic", "eq", "response_speed", "persuasion"]
+
+
+def validate_critique(critique) -> list[str]:
+    """Skill-13 contract: exactly 3 critique points."""
+    if not isinstance(critique, list):
+        return ["recorded_critique is not a list"]
+    if len(critique) != 3:
+        return [f"Skill-13 contract is exactly 3 critique points, found {len(critique)}"]
+    return [f"critique point {i + 1} is empty" for i, p in enumerate(critique)
+            if not str(p).strip()]
+
+
+def validate_battle(battle) -> list[str]:
+    """Skill-9 contract: 4 integer scores 0-100 plus exactly 2 advice tips."""
+    if not isinstance(battle, dict):
+        return ["recorded_battle is not an object"]
+    problems = []
+    for dim in BATTLE_DIMENSIONS:
+        score = battle.get(dim)
+        if not isinstance(score, int) or isinstance(score, bool):
+            problems.append(f"{dim} is not an integer: {score!r}")
+        elif not 0 <= score <= 100:
+            problems.append(f"{dim} out of range 0-100: {score}")
+    advice = battle.get("advice")
+    if not isinstance(advice, list) or len(advice) != 2:
+        problems.append("Skill-9 contract is exactly 2 advice tips, found "
+                        f"{len(advice) if isinstance(advice, list) else advice!r}")
+    return problems
+
+
+def record_battle(battle: dict, scenario_id: str) -> dict:
+    """Append one battle result to the gitignored session file. Returns the record."""
+    GROWTH_DIR.mkdir(parents=True, exist_ok=True)
+    entry = {"date": datetime.now().strftime("%Y-%m-%d"), "scenario": scenario_id,
+             "origin": "recorded-fixture"}
+    entry.update({dim: battle[dim] for dim in BATTLE_DIMENSIONS})
+    with SESSION_BATTLES.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    return entry
+
+
+def growth_input_path() -> Path | None:
+    """Merge the tracked seed with this session's battles into a scratch file.
+
+    The seed is never written to. Returns None when there is nothing to plot.
+    """
+    lines = []
+    for source in (BATTLE_SCORES, SESSION_BATTLES):
+        if source.exists():
+            lines += [ln for ln in source.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    if not lines:
+        return None
+    GROWTH_DIR.mkdir(parents=True, exist_ok=True)
+    GROWTH_INPUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return GROWTH_INPUT
+
+
+# --------------------------------------------------------------------------
 # The pipeline
 # --------------------------------------------------------------------------
 
@@ -499,6 +654,7 @@ def run_scenario(scenario: dict, models: dict[str, dict], routes: dict[str, str]
     stage_header("Stage 3b", "Skill-7 + Skill-12", "generation behind the output gate")
     drafts = [scenario.get("recorded_draft", "")]
     drafts += scenario.get("recorded_regenerations", [])
+    drafts = [d for d in drafts if d] or [compose_structural(model_info, cards)]
     final_text, final_verdict = "", "ERROR"
     regeneration_hint = None
 
@@ -551,12 +707,57 @@ def run_scenario(scenario: dict, models: dict[str, dict], routes: dict[str, str]
     check("final", final_verdict, "final_verdict")
     outcome["final"] = final_verdict
 
-    # ---- Stage 4 — Skill-10 growth trends ---------------------------------
-    if BATTLE_SCORES.exists():
-        stage_header("Stage 4", "Skill-10 growth-trends", "learning analytics")
-        code, payload, raw, ms = run_script(GROWTH_TRENDS, ["--scores", str(BATTLE_SCORES)])
-        audit.record(scenario=name, stage="4", skill="Skill-10", verdict="OK" if code == 0 else "EMPTY",
-                     exit_code=code, elapsed_ms=ms, source=str(BATTLE_SCORES.relative_to(ROOT)))
+    # ---- Stage 3c — Skill-13 iterative critique ---------------------------
+    critique = scenario.get("recorded_critique") or []
+    if critique:
+        stage_header("Stage 3c", "Skill-13 iterative-critique", "three critique points")
+        problems = validate_critique(critique)
+        outcome["deviations"] += problems
+        verdict = "OK" if not problems else "CONTRACT_VIOLATION"
+        audit.record(scenario=name, stage="3c", skill="Skill-13", verdict=verdict,
+                     exit_code=None, elapsed_ms=0, source="recorded", points=len(critique))
+        print(f"  {badge(verdict)} {Style.yellow('recorded critique (replay)')} "
+              f"{Style.dim('— Skill-13 is prose-only; no script to run offline')}")
+        for i, point in enumerate(critique, 1):
+            print(indent(f"{i}. {point}"))
+        for problem in problems:
+            print(indent(Style.red(problem)))
+        check("critique points", str(len(critique)), "critique_points")
+
+    # ---- Stage 4 — Skill-8 battle simulation, Skill-9 scoring --------------
+    battle = scenario.get("recorded_battle")
+    if battle:
+        stage_header("Stage 4", "Skill-8 + Skill-9", "sandbox battle & scoring")
+        problems = validate_battle(battle)
+        outcome["deviations"] += problems
+        verdict = "OK" if not problems else "CONTRACT_VIOLATION"
+        print(f"  {badge(verdict)} {Style.yellow('recorded battle (replay)')} "
+              f"{Style.dim('— Skill-8/9 are prose-only; no script to run offline')}")
+        if not problems:
+            for dim in BATTLE_DIMENSIONS:
+                bar = "#" * round(battle[dim] / 5)
+                print(f"    {dim:<16} {battle[dim]:>3}  {Style.cyan(bar)}")
+            for tip in battle["advice"]:
+                print(indent(Style.dim("tip: " + tip)))
+            record_battle(battle, name)
+        for problem in problems:
+            print(indent(Style.red(problem)))
+        audit.record(scenario=name, stage="4", skill="Skill-9", verdict=verdict,
+                     exit_code=None, elapsed_ms=0, source="recorded",
+                     **{dim: battle.get(dim) for dim in BATTLE_DIMENSIONS})
+        if expect.get("battle_scored") is True and problems:
+            outcome["deviations"].append("battle_scored expected, contract violated")
+
+    # ---- Stage 6 — Skill-10 persistence & growth trends --------------------
+    # Spec §5: Stage 6 is persistence/archiving, which is what growth-trends
+    # reads. Reads the seed plus this session's battles; writes neither.
+    scores_path = growth_input_path()
+    if scores_path:
+        stage_header("Stage 6", "Skill-10 growth-trends", "learning analytics")
+        code, payload, raw, ms = run_script(GROWTH_TRENDS, ["--scores", str(scores_path)])
+        audit.record(scenario=name, stage="6", skill="Skill-10", verdict="OK" if code == 0 else "EMPTY",
+                     exit_code=code, elapsed_ms=ms,
+                     source=f"{BATTLE_SCORES.relative_to(ROOT)} + {SESSION_BATTLES.relative_to(ROOT)}")
         print(f"  {badge('OK' if code == 0 else 'EMPTY')} exit {code}  {Style.dim(GROWTH_TRENDS.name)}")
         print(indent(json.dumps(payload, ensure_ascii=False, indent=2) if payload else raw.strip()))
 
@@ -581,7 +782,7 @@ def load_scenarios(selector: str | None) -> list[dict]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="WiseTalk end-to-end pipeline demo (Master Spec §5, Stages 0-4).",
+        description="WiseTalk end-to-end pipeline demo (Master Spec §5, Stages 0-6).",
     )
     parser.add_argument("--scenario", help="run only scenarios whose id contains this string")
     parser.add_argument("--list", action="store_true", help="list available scenarios and exit")
@@ -605,6 +806,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.api and not os.environ.get("ANTHROPIC_API_KEY"):
         print(Style.yellow("--api given but ANTHROPIC_API_KEY is unset; falling back to recorded drafts."))
+
+    # Start each run from the tracked seed alone, so two identical invocations
+    # produce identical growth output. Reproducibility is the claim being sold.
+    SESSION_BATTLES.unlink(missing_ok=True)
 
     models = parse_catalog()
     routes = parse_routing_map()

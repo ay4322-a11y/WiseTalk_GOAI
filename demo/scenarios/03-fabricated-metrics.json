@@ -12,10 +12,27 @@
   "recorded_regenerations": [
     "When I joined the platform team, new engineers took about six weeks to ship their first production change, and two of the four hires that year told me onboarding was the reason they nearly left.\n\nI owned making onboarding faster without adding headcount. I interviewed every recent hire, mapped where they got stuck, replaced the wiki with a runnable setup script, and paired each new engineer with a rotating owner for their first two weeks.\n\nTime to first production change dropped from six weeks to under two weeks, and the next four hires all shipped in their first fortnight. What I would repeat is starting from the interviews rather than from my own guess about what was slow."
   ],
+  "recorded_critique": [
+    "The regenerated draft is clean of invented figures, but the Action card still reads as a list of four things done in parallel. An interviewer will ask which one actually moved the six weeks. Rank them — the runnable setup script and the rotating owner almost certainly did unequal work.",
+    "The Result gives a strong before/after but the sample is four hires. State it. \"The next four hires all shipped in their first fortnight\" is more credible when you own the small n yourself rather than letting the interviewer discover it.",
+    "Your Situation opens on the problem's symptoms and reaches your ownership only in the Task. In a STAR answer under time pressure, the interviewer may never get there. Compress the symptom to one clause and let \"I owned making onboarding faster\" arrive in the first two sentences."
+  ],
+  "recorded_battle": {
+    "logic": 88,
+    "eq": 63,
+    "response_speed": 70,
+    "persuasion": 74,
+    "advice": [
+      "Your weakest dimension is EQ. When challenged on whether the improvement was really yours, you defended the result instead of crediting the rotating owners — sharing the credit would have strengthened, not weakened, the claim.",
+      "Response speed dropped sharply on the \"what would you do differently\" question. You already have the answer in your own Result card — starting from interviews rather than guesswork. Have it ready."
+    ]
+  },
   "expect": {
     "stage0": "SAFE",
     "routed_agent": "Agent 1 (STAR)",
     "stage3a": "PASS",
-    "final_verdict": "PASS"
+    "final_verdict": "PASS",
+    "critique_points": 3,
+    "battle_scored": true
   }
 }

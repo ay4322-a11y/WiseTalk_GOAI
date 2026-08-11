@@ -9,7 +9,7 @@ models** (the curriculum), **new skills** (the capability layer), and **new demo
 ```
 git clone https://github.com/ay4322-a11y/WiseTalk_GOAI.git && cd WiseTalk_GOAI
 python demo.py                      # should end "as declared" on all 5 scenarios
-python -m unittest discover tests   # 29 tests
+python -m unittest discover tests   # 36 tests
 ```
 
 *Windows note:* the deepest path in the tree is 107 characters

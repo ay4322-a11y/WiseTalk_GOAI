@@ -47,3 +47,16 @@ jobs:
           done
           curl -sf -o /dev/null http://127.0.0.1:8000/
           curl -sf http://127.0.0.1:8000/api/models | python -c "import json,sys; assert len(json.load(sys.stdin)['models']) == 8"
+          # The KPI strip and the corpus panel are computed, not hardcoded — so CI
+          # holds them to the same figures METRICS.md publishes.
+          curl -sf http://127.0.0.1:8000/api/metrics | python -c "import json,sys; m=json.load(sys.stdin); assert m['models']==8 and m['use_cases']==32 and m['skills']==9 and m['dependencies']==0, m"
+          curl -sf http://127.0.0.1:8000/api/corpus | python -c "import json,sys; c=json.load(sys.stdin); assert c['attack']['blocked']==28 and c['attack']['total']==28, c; assert c['benign']['blocked']==0 and c['benign']['total']==24, c"
+
+      - name: Demo run leaves the repository clean
+        # The tracked battle-scores seed is evidence from a real E2E run. Session
+        # battles belong in the gitignored runs/ directory, never back into it.
+        run: |
+          python demo.py > /dev/null
+          git diff --exit-code
+        env:
+          NO_COLOR: "1"

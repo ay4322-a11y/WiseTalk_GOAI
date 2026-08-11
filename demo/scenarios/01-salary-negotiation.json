@@ -9,10 +9,27 @@
     "Effect": "Closing that 12% gap keeps ownership of the migration continuous and removes the retention risk before the planning cycle starts."
   },
   "recorded_draft": "Thank you for making time. I want to talk about my compensation ahead of the planning cycle.\n\nSince I took over the billing service I have been operating at a level where my current band sits 12% below the internal median. I am raising it now rather than later because the migration depends on continuous ownership, and a handover would take at least two quarters.\n\nI know your priority is keeping the billing service stable through the migration without backfilling a senior engineer mid-project. Closing the 12% gap serves exactly that — it removes the retention risk before planning starts and keeps the migration with the person who has been running it.\n\nCan we agree on adjusting my band to the internal median effective this cycle?",
+  "recorded_critique": [
+    "The Risk card is doing the work of an ultimatum. \"I will start taking recruiter calls\" makes the cost of inaction personal leverage rather than shared business risk. RIDE's Risk is the risk to the org if nothing changes — lead with the two-quarter handover of the billing service and let the retention implication sit underneath it, unstated.",
+    "Your Effect asks for \"closing that 12% gap\" but never names the number, the band, or the date it takes effect. A manager cannot approve a direction — they approve a figure at a review point. Convert it to a specific ask tied to the planning cycle you already mention.",
+    "The 12% figure carries the whole Difference card and no source is attached to it. If your manager asks \"where does 12% come from?\" and the answer is vague, the entire argument deflates. Name the source — internal levelling data, a comp review, a recruiter benchmark — before you are asked."
+  ],
+  "recorded_battle": {
+    "logic": 82,
+    "eq": 66,
+    "response_speed": 74,
+    "persuasion": 79,
+    "advice": [
+      "Your weakest dimension is EQ. Under pushback you restated your own position twice instead of acknowledging the budget constraint your manager raised — name their constraint out loud before you re-anchor.",
+      "You had the strongest ground when you tied the raise to migration continuity, but you left it after one sentence. When the interrogator pressed on cost, that was the point to return to, not the market data."
+    ]
+  },
   "expect": {
     "stage0": "SAFE",
     "routed_agent": "Agent 6 (RIDE)",
     "stage3a": "PASS",
-    "final_verdict": "PASS"
+    "final_verdict": "PASS",
+    "critique_points": 3,
+    "battle_scored": true
   }
 }

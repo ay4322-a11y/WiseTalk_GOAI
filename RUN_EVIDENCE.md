@@ -122,7 +122,10 @@ Scenario `03-fabricated-metrics`, verbatim from the run above (fields trimmed fo
  "flagged_claims":["According to Gartner","30% of","47% reduction"]}
 {"stage":"3b","skill":"Skill-12","verdict":"PASS",   "exit_code":0,   "elapsed_ms":343,"retry":1,
  "flagged_values":[],"flagged_claims":[]}
-{"stage":"4", "skill":"Skill-10","verdict":"OK",     "exit_code":0,   "elapsed_ms":331,"retry":0}
+{"stage":"3c","skill":"Skill-13","verdict":"OK",     "exit_code":null,"elapsed_ms":0,  "retry":0,"source":"recorded","points":3}
+{"stage":"4", "skill":"Skill-9", "verdict":"OK",     "exit_code":null,"elapsed_ms":0,  "retry":0,"source":"recorded",
+ "logic":88,"eq":63,"response_speed":70,"persuasion":74}
+{"stage":"6", "skill":"Skill-10","verdict":"OK",     "exit_code":0,   "elapsed_ms":331,"retry":0}
 ```
 
 Every gate decision is traceable to a process exit code, so a reviewer can re-run any
@@ -134,12 +137,12 @@ single stage and get the same verdict.
 
 ```
 ----------------------------------------------------------------------
-Ran 29 tests in 19.468s
+Ran 36 tests in 8.277s
 
 OK
 ```
 
-The 29 tests assert exit codes *and* JSON verdicts across six areas:
+The 36 tests assert exit codes *and* JSON verdicts across nine areas:
 
 | Area | What is asserted |
 |---|---|
@@ -150,6 +153,9 @@ The 29 tests assert exit codes *and* JSON verdicts across six areas:
 | Catalog & routing | 8 models with fields; 32 use cases; every catalog use case routable; every routed agent resolves to a model |
 | Router bands | ≥0.6 routes · 0.4–0.6 clarifies · <0.4 falls back |
 | Scenarios | all five behave as declared, and each declares expectations at all |
+| Structural composition | every catalog card has a lead-in; composition preserves card order, is **not** a bare echo of the input, and skips empty cards |
+| Recorded coaching contracts | Skill-13 recordings are exactly 3 points; Skill-9 recordings are 4 integers 0–100 plus exactly 2 tips; every shipped recording satisfies its contract |
+| Repository cleanliness | a demo run never writes to the tracked `battle-scores.jsonl`; the merged growth input lands in the gitignored `runs/` |
 
 ---
 

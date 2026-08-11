@@ -68,7 +68,7 @@ From the shipped scenarios (`demo/scenarios/`, verified on every CI run):
 | Fabrications caught in the BLOCK scenario | 4 (1 currency, 1 authority citation, 2 statistics) |
 | Regenerations needed to reach a clean draft | 1 (cap is 2) |
 | Critique iterations before force-exit | 3 (hard cap) |
-| Automated tests | **29, all passing** |
+| Automated tests | **36, all passing** |
 
 ## Eval status — stated honestly
 
@@ -91,7 +91,7 @@ their own case counts; it was removed on 2026-08-11 rather than carried into a s
 See the audit note at the top of each of those files.
 
 Separately, the deterministic script behaviour those cases reference — Skill-11 and
-Skill-12 verdicts and exit codes — **is** covered by the 29 automated tests, which run on
+Skill-12 verdicts and exit codes — **is** covered by the 36 automated tests, which run on
 every commit. The 53 unscored cases are agent-behaviour cases that require a Claude Code
 session to score.
 

@@ -23,19 +23,36 @@ Every claim below is checkable from a clean clone in under two minutes, with no 
 
 | GOAI criterion | Where the evidence lives | Verify it |
 |---|---|---|
-| **Runnable demo** | [demo.py](demo.py) (CLI, 5 scenarios) · [demo_server.py](demo_server.py) (browser UI) | `python demo.py` — exits non-zero if any scenario deviates from its declared JSON |
-| **Reproducibility** | [tests/test_skills.py](tests/test_skills.py) · [.github/workflows/ci.yml](.github/workflows/ci.yml) (Python 3.9 + 3.12) | `python -m unittest discover tests` → 29 tests |
+| **Runnable demo** | [demo.py](demo.py) (CLI, 5 scenarios, Stages 0–6) · [demo_server.py](demo_server.py) (browser UI — cards, gates, critique, battle radar, growth curve) | `python demo.py` — exits non-zero if any scenario deviates from its declared JSON |
+| **Reproducibility** | [tests/test_skills.py](tests/test_skills.py) · [.github/workflows/ci.yml](.github/workflows/ci.yml) (Python 3.9 + 3.12) | `python -m unittest discover tests` → 36 tests |
 | **Licenses · dependencies · IP boundaries** | [LICENSE](LICENSE) (Apache-2.0) · [§ License & dependencies](#license--dependencies) — including what is *not* ours | Third-party runtime dependencies: **0** |
 | **Open-source contribution value** | [skills-library/](skills-library/README.md) — 4 of the 9 skills are WiseTalk-agnostic and reusable in any agent system · [docs/skill-contract.md](docs/skill-contract.md) | `python skills-library/sync.py --verify` — drift gate over 38 copies |
 | **Project completeness** | [METRICS.md](METRICS.md) — every figure computed from the repo, *including the eval gap we have not closed* | `python tools/metrics.py` |
 | **Technical innovation** | Two-front deterministic security gateway: [injection-filter](skills-library/injection-filter/SKILL.md) + [hallucination-check](skills-library/hallucination-check/SKILL.md) — exit-code scripts, not prompts, so they cannot be argued out of a verdict | `python demo.py --scenario 03` — 4 fabrications caught, draft regenerated |
-| **Auditability** | `runs/<timestamp>.jsonl` written on every run · [RUN_EVIDENCE.md](RUN_EVIDENCE.md) | Each record: stage, skill, verdict, process exit code, latency, retry |
+| **Auditability** | `runs/<timestamp>.jsonl` written on every run · [RUN_EVIDENCE.md](RUN_EVIDENCE.md) | Each record: stage, skill, verdict, process exit code, latency, retry, generation source |
+| **Nothing hardcoded** | The browser demo's KPI strip and injection-corpus panel are computed on request by [tools/metrics.py](tools/metrics.py) and the real DFA filter | Open the demo, expand *Skill-11 · injection corpus* → 28/28 blocked, 0/24 false positives, counted live |
 
 **What we do not claim.** [RUN_EVIDENCE.md § 6](RUN_EVIDENCE.md#6-what-these-runs-do-and-do-not-prove)
 and [METRICS.md](METRICS.md#eval-status--stated-honestly) state the boundaries in the repo
 itself: generation quality is not proven by these runs, `demo.py`'s router is a labelled
 deterministic stand-in for the LLM classifier, and 53 of 115 eval cases remain unscored. A
 gate that lies about itself is worthless, so neither does the documentation.
+
+**Where the words come from.** Stage 3b has three sources and every stage row in the demo is
+labelled with the one that ran, because a demo that blurs them is not evidence:
+
+| Source | When | What it is |
+|---|---|---|
+| `live` | `--api` **and** `ANTHROPIC_API_KEY` set | A real Claude API call |
+| `recorded` | A curated scenario, no key | A draft replayed from the scenario JSON |
+| `composed` | Your own input, no key | Your cards ordered through the model's rhetorical sequence by `compose_structural` — deterministic, offline, **no model is called** |
+
+`composed` is a structuring step, not a generator: every word of substance is yours. The
+gates, the router and the growth aggregator are the real scripts in all three cases. Stage 3c
+(critique) and Stage 4 (battle) are always `recorded` — Skill-13, Skill-8 and Skill-9 are
+prose-only skills with no scripts, so they cannot run deterministically offline. Their
+recordings are validated against the published contracts (exactly 3 critique points; 4
+integer scores 0–100 plus exactly 2 tips), so a drifted fixture fails the run.
 
 ## WiseTalk is a learning system, not a writing service
 
@@ -87,14 +104,15 @@ repo is Python-standard-library only.
 
 ```
 git clone https://github.com/ay4322-a11y/WiseTalk_GOAI.git && cd WiseTalk_GOAI
-python demo.py                      # all 5 scenarios, Stages 0-4
+python demo.py                      # all 5 scenarios, Stages 0-6
 python demo.py --list               # list scenarios
 python demo.py --scenario 03        # the fabricated-metrics BLOCK -> regenerate loop
 python demo_server.py               # clickable browser demo on http://localhost:8000
+python demo_server.py --api         # same, but Stage 3b calls the Claude API
 python -m unittest discover tests   # the deterministic skill tests
 ```
 
-`demo.py` walks the Master Spec pipeline (§5, Stages 0–4) by calling the **same skill scripts the
+`demo.py` walks the Master Spec pipeline (§5, Stages 0–6) by calling the **same skill scripts the
 Expert Agents call** — the injection filter, the hallucination gate, the growth-trend aggregator.
 Two boundaries are stated in the output rather than hidden: Stage 1's router is a deterministic
 keyword stand-in for Skill-1's LLM classifier, and Stage 3b replays a recorded draft unless
@@ -144,13 +162,14 @@ python skills-library/sync.py --verify                       # check for drift (
 
 ## The shared tools (Skills 4–12)
 
-The 8 skills in the library are the system's shared capability layer. Each is a complete, deterministic, tested skill:
+The 9 skills in the library are the system's shared capability layer. Each is a complete, deterministic, tested skill:
 
 | Skill | WiseTalk # | Role |
 |-------|-----------|------|
 | [mece-logic-checker](skills-library/mece-logic-checker/SKILL.md) | Skill-4 | Deterministic MECE check on argument points |
 | [funnel-compression](skills-library/funnel-compression/SKILL.md) | Skill-5 | Compress text to <20% of original length |
 | [subtext-emotion](skills-library/subtext-emotion/SKILL.md) | Skill-6 | Decode hidden intentions from exact words |
+| [language-polishing](skills-library/language-polishing/SKILL.md) | Skill-7 | Draft generation and register/tone polishing |
 | [battle-simulator](skills-library/battle-simulator/SKILL.md) | Skill-8 | Role-play interrogation of a draft |
 | [battle-scoring](skills-library/battle-scoring/SKILL.md) | Skill-9 | Score completed battle transcripts |
 | [growth-trends](skills-library/growth-trends/SKILL.md) | Skill-10 | Aggregate battle-score history into trends |
