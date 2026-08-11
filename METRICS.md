@@ -50,11 +50,13 @@ Measured over six labelled fixtures spanning the full verdict range.
 | Labelled fixtures | 6 |
 | Verdict matches label | **6 / 6 (100%)** |
 | Drafts blocked before delivery | 2 |
-| Median gate latency | ~300 ms |
+| Median gate latency | ~300–400 ms (machine-dependent) |
 
 Latency is dominated by Python interpreter startup — the gate itself is a regex pass over
 the draft, and it runs with **no model call**, so the security layer costs nothing per token
-and cannot be talked out of its verdict.
+and cannot be talked out of its verdict. This is the one figure here that varies with the
+host: repeated runs on the development machine gave 300 ms and 388 ms, so it is quoted as a
+range rather than pinned to whichever run was captured last.
 
 ## Loop and pipeline behaviour
 

@@ -9,8 +9,13 @@ models** (the curriculum), **new skills** (the capability layer), and **new demo
 ```
 git clone https://github.com/ay4322-a11y/WiseTalk_GOAI.git && cd WiseTalk_GOAI
 python demo.py                      # should end "as declared" on all 5 scenarios
-python -m unittest discover tests   # 28 tests
+python -m unittest discover tests   # 29 tests
 ```
+
+*Windows note:* the deepest path in the tree is 107 characters
+(`agents/*/claude-code/.claude/skills/hallucination-check/scripts/…`). Cloning into an
+already-deep directory can exceed the 260-character `MAX_PATH` limit; clone somewhere
+shallow, or enable long paths with `git config --global core.longpaths true`.
 
 Python 3.9+ is the only requirement. **There is nothing to install** — this repo is
 standard library only, and a pull request that adds a third-party dependency to the
