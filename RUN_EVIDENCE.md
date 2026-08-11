@@ -134,12 +134,12 @@ single stage and get the same verdict.
 
 ```
 ----------------------------------------------------------------------
-Ran 28 tests in 18.334s
+Ran 29 tests in 19.468s
 
 OK
 ```
 
-The 28 tests assert exit codes *and* JSON verdicts across six areas:
+The 29 tests assert exit codes *and* JSON verdicts across six areas:
 
 | Area | What is asserted |
 |---|---|

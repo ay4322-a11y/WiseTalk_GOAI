@@ -306,8 +306,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     text = " ".join(args.text).strip() if args.text else None
-    if text is None:
-        text = sys.stdin.read().strip() if not sys.stdin.isatty() else None
+    if text is None and not sys.stdin.isatty():
+        # Empty stdin means "no text supplied", NOT "validate the empty string".
+        # Without the `or None` an agent invoked with a pipe or /dev/null on stdin
+        # (i.e. every non-interactive call) would shadow --data with "" and the
+        # input gate would PASS anything — a fail-open in a fail-closed component.
+        text = sys.stdin.read().strip() or None
 
     try:
         data = args.data

@@ -24,7 +24,7 @@ Every claim below is checkable from a clean clone in under two minutes, with no 
 | GOAI criterion | Where the evidence lives | Verify it |
 |---|---|---|
 | **Runnable demo** | [demo.py](demo.py) (CLI, 5 scenarios) · [demo_server.py](demo_server.py) (browser UI) | `python demo.py` — exits non-zero if any scenario deviates from its declared JSON |
-| **Reproducibility** | [tests/test_skills.py](tests/test_skills.py) · [.github/workflows/ci.yml](.github/workflows/ci.yml) (Python 3.9 + 3.12) | `python -m unittest discover tests` → 28 tests |
+| **Reproducibility** | [tests/test_skills.py](tests/test_skills.py) · [.github/workflows/ci.yml](.github/workflows/ci.yml) (Python 3.9 + 3.12) | `python -m unittest discover tests` → 29 tests |
 | **Licenses · dependencies · IP boundaries** | [LICENSE](LICENSE) (Apache-2.0) · [§ License & dependencies](#license--dependencies) — including what is *not* ours | Third-party runtime dependencies: **0** |
 | **Open-source contribution value** | [skills-library/](skills-library/README.md) — 4 of the 9 skills are WiseTalk-agnostic and reusable in any agent system · [docs/skill-contract.md](docs/skill-contract.md) | `python skills-library/sync.py --verify` — drift gate over 38 copies |
 | **Project completeness** | [METRICS.md](METRICS.md) — every figure computed from the repo, *including the eval gap we have not closed* | `python tools/metrics.py` |
@@ -136,7 +136,7 @@ python skills-library/sync.py --verify                       # check for drift (
 | [templates/04-validation-checklist.md](templates/04-validation-checklist.md) | **The gate** — per-element Definition-of-Done rubric with pass thresholds |
 | [demo.py](demo.py) · [demo_server.py](demo_server.py) | **The runnable demo** — CLI pipeline walk and the zero-dependency browser fill-in-card UI, both driving the real skill scripts |
 | [demo/scenarios/](demo/scenarios/) · [demo/corpus/](demo/corpus/) | **The evidence inputs** — 5 declared scenarios; 28-message attack corpus + 24-message benign corpus for false-positive measurement |
-| [tests/test_skills.py](tests/test_skills.py) | **The reproducibility gate** — 28 stdlib tests asserting exit codes and JSON verdicts |
+| [tests/test_skills.py](tests/test_skills.py) | **The reproducibility gate** — 29 stdlib tests asserting exit codes and JSON verdicts |
 | [tools/metrics.py](tools/metrics.py) → [METRICS.md](METRICS.md) | **The numbers** — coverage, security rates, eval status, all computed from the repo |
 | [RUN_EVIDENCE.md](RUN_EVIDENCE.md) | **Captured console output** from real runs, with what it does and does not prove |
 | [docs/skill-contract.md](docs/skill-contract.md) · [CONTRIBUTING.md](CONTRIBUTING.md) | **The reuse interface** — skill frontmatter, exit-code contract, fail-closed rule, lifecycle |

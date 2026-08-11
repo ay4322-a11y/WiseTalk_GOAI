@@ -165,6 +165,19 @@ class HallucinationGateInput(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(payload["regex_flagged"], 0)
 
+    def test_empty_stdin_does_not_shadow_the_data_argument(self):
+        """Regression: agents are invoked non-interactively, so stdin is a pipe or
+        /dev/null. Reading it yields "" — which must mean "no text supplied", not
+        "validate the empty string". Treating it as text discarded --data and made
+        the gate PASS anything: a fail-open in a fail-closed component."""
+        code, payload = run(GATE, "--mode", "input", "--data",
+                            "Risk: [AI Placeholder]\nInterest: [AI Placeholder]\n"
+                            "Effect: [AI Placeholder]", stdin="")
+        self.assertEqual(payload["verdict"], "BLOCK",
+                         "empty stdin must not shadow --data")
+        self.assertEqual(code, 3)
+        self.assertEqual(len(payload["placeholder_flagged"]), 3)
+
 
 class MeceChecker(unittest.TestCase):
     """Skill-4 — deterministic overlap/gap check on argument points."""
